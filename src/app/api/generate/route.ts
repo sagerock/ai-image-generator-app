@@ -28,10 +28,10 @@ const getModelConfig = (modelId: string) => {
       aspectRatio: '1:1'
     },
     'stable-diffusion': { 
-      name: 'Stable Diffusion', 
+      name: 'Stable Diffusion 2.1', 
       credits: 1, 
       provider: 'replicate',
-      replicateModel: 'stability-ai/stable-diffusion',
+      replicateModel: 'stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4',
       aspectRatio: '1:1'
     },
     'flux-dev': { 
@@ -41,11 +41,11 @@ const getModelConfig = (modelId: string) => {
       replicateModel: 'black-forest-labs/flux-dev',
       aspectRatio: '1:1'
     },
-    'flux-pro': { 
-      name: 'FLUX Pro', 
-      credits: 2, 
+    'flux-pro': {
+      name: 'FLUX 1.1 Pro',
+      credits: 2,
       provider: 'replicate',
-      replicateModel: 'black-forest-labs/flux-pro',
+      replicateModel: 'black-forest-labs/flux-1.1-pro',
       aspectRatio: '1:1'
     },
     'dall-e-3': { 
@@ -118,7 +118,8 @@ export async function POST(request: NextRequest) {
 
     // Generate image based on provider
     console.log(`🎨 Generating image with ${modelConfig.name}...`);
-    let imageUrl: string;
+    let imageUrl: string | null = null;
+    let imageBuffer: Buffer | null = null;
 
     if (modelConfig.provider === 'openai') {
       const response = await openai.images.generate({
@@ -135,71 +136,169 @@ export async function POST(request: NextRequest) {
       }
       imageUrl = responseUrl;
     } else if (modelConfig.provider === 'replicate') {
-      const input: any = {
-        prompt: prompt,
-        aspect_ratio: modelConfig.aspectRatio || "1:1",
-        output_format: "png",
-        output_quality: 90,
-      };
-
-      // Add model-specific parameters
-      if (model === 'flux-schnell') {
-        input.num_inference_steps = 4; // Fast generation
-      } else if (model === 'stable-diffusion') {
-        input.width = 1024;
-        input.height = 1024;
-        input.num_inference_steps = 50;
+      // Check if Replicate API token is available
+      if (!process.env.REPLICATE_API_TOKEN) {
+        console.error('❌ REPLICATE_API_TOKEN environment variable not set');
+        throw new Error('Replicate API token not configured');
       }
 
-      const output = await replicate.run(modelConfig.replicateModel! as `${string}/${string}`, { input });
+      console.log('🔑 Replicate API token available, proceeding...');
       
-      if (Array.isArray(output) && output.length > 0) {
-        imageUrl = output[0] as string;
-      } else if (typeof output === 'string') {
-        imageUrl = output;
-      } else {
-        throw new Error('No image URL returned from Replicate');
+      // Start with minimal input parameters to debug
+      const input: any = {
+        prompt: prompt,
+      };
+
+      // Add only essential parameters for each model
+      if (model === 'flux-schnell') {
+        // FLUX Schnell - use the correct parameters for official Replicate model
+        input.go_fast = true;
+        input.num_outputs = 1;
+        input.aspect_ratio = "1:1";
+        input.output_format = "webp";
+        input.output_quality = 90;
+      } else if (model === 'flux-dev') {
+        // FLUX Dev - minimal parameters  
+        input.aspect_ratio = "1:1";
+        input.num_outputs = 1;
+        input.output_format = "webp";
+        input.output_quality = 90;
+      } else if (model === 'flux-pro') {
+        // FLUX 1.1 Pro - minimal parameters
+        input.aspect_ratio = "1:1";
+        input.num_outputs = 1;
+        input.output_format = "webp";
+        input.output_quality = 90;
+      } else if (model === 'stable-diffusion') {
+        // Stable Diffusion - keep existing parameters as they were working before
+        input.width = 512;
+        input.height = 512;
+        input.num_inference_steps = 50;
+        input.guidance_scale = 7.5;
+      }
+
+      console.log('📤 Sending request to Replicate with input:', JSON.stringify(input, null, 2));
+      
+      try {
+        const modelIdentifier = modelConfig.replicateModel!;
+        const hasVersion = modelIdentifier.includes(':');
+        
+        console.log(`🚀 Creating Replicate prediction for model: ${modelIdentifier}`);
+
+        const createOptions: any = { input };
+        if (hasVersion) {
+          createOptions.version = modelIdentifier;
+        } else {
+          createOptions.model = modelIdentifier;
+        }
+
+        const prediction = await replicate.predictions.create(createOptions);
+
+        if (!prediction || !prediction.id) {
+          throw new Error("Failed to create prediction with Replicate.");
+        }
+
+        console.log(`⏳ Prediction created with ID: ${prediction.id}. Waiting for completion...`);
+        console.log(`View on Replicate: ${prediction.urls?.get}`);
+
+        // Wait for the prediction to complete
+        const completedPrediction = await replicate.wait(prediction, {});
+
+        console.log('✅ Prediction completed with status:', completedPrediction.status);
+
+        if (completedPrediction.status !== 'succeeded') {
+            console.error('❌ Prediction failed or was canceled. Full details:', JSON.stringify(completedPrediction, null, 2));
+            throw new Error(`Prediction ended with status: ${completedPrediction.status}. Error: ${completedPrediction.error}`);
+        }
+
+        console.log('RAW Replicate output:', JSON.stringify(completedPrediction.output, null, 2));
+        const output = completedPrediction.output;
+        
+        if (typeof output === 'string' && output.startsWith('http')) {
+          imageUrl = output;
+        } else if (Array.isArray(output) && output.length > 0) {
+          // The model might return an array of URLs, Buffers, or objects containing URLs
+          for (const item of output) {
+            if (typeof item === 'string' && item.startsWith('http')) {
+              imageUrl = item as string;
+              break;
+            }
+            if (Buffer.isBuffer(item)) {
+              console.log('✅ Received image buffer inside array from Replicate.');
+              imageBuffer = item as Buffer;
+              break;
+            }
+            if (typeof item === 'object' && item !== null) {
+              const maybeUrl = Object.values(item).find((v: any) => typeof v === 'string' && v.startsWith('http'));
+              if (maybeUrl) {
+                imageUrl = maybeUrl as string;
+                break;
+              }
+            }
+          }
+        } else if (typeof output === 'object' && output !== null) {
+          // Sometimes the API returns a single object with a URL field
+          const maybeUrl = Object.values(output).find((v: any) => typeof v === 'string' && v.startsWith('http'));
+          if (maybeUrl) {
+            imageUrl = maybeUrl as string;
+          } else if (Buffer.isBuffer(output)) {
+            imageBuffer = output as Buffer;
+          }
+        } else if (Buffer.isBuffer(output)) {
+          console.log('✅ Received single image buffer directly from Replicate.');
+          imageBuffer = output;
+        }
+        
+        if (!imageUrl && !imageBuffer) {
+          console.error('❌ Unhandled Replicate output format:', JSON.stringify(output, null, 2));
+          throw new Error(`No valid image data returned from Replicate. Received: ${JSON.stringify(output)}`);
+        }
+      } catch (replicateError: any) {
+        console.error('❌ Replicate API Error:', replicateError);
+        console.error('❌ Error details:', {
+          message: replicateError.message,
+          status: replicateError.status,
+          details: replicateError.detail || replicateError.details,
+        });
+        throw new Error(`Replicate API failed: ${replicateError.message}`);
       }
     } else {
       throw new Error('Unsupported provider');
     }
 
-    console.log('✅ Image generated successfully');
-
-    // Download the image from OpenAI
-    console.log('📥 Downloading image from OpenAI...');
-    const imageResponse = await fetch(imageUrl);
-    if (!imageResponse.ok) {
-      throw new Error('Failed to download image from OpenAI');
-    }
-    const imageBuffer = await imageResponse.arrayBuffer();
-    
-    // Generate a unique filename
-    const timestamp = Date.now();
-    const filename = `generated-images/${userId}/${timestamp}.png`;
-    
-    // Upload to Firebase Storage
-    console.log('☁️ Uploading to Firebase Storage...');
-    const bucket = adminStorage.bucket();
-    const file = bucket.file(filename);
-    
-    await file.save(Buffer.from(imageBuffer), {
-      metadata: {
-        contentType: 'image/png',
-        metadata: {
-          userId: userId,
-          prompt: prompt,
-          model: model,
-          createdAt: new Date().toISOString(),
+    // If we have a URL, download the image into a buffer.
+    // If we already have a buffer (from flux-1.1-pro), we can skip this.
+    if (imageUrl && !imageBuffer) {
+      console.log('📥 Downloading image from URL...');
+      try {
+        const response = await fetch(imageUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to download image: ${response.statusText}`);
         }
+        imageBuffer = Buffer.from(await response.arrayBuffer());
+      } catch (e) {
+        console.error("Error downloading image:", e);
+        throw new Error("Failed to download image from provider.");
       }
+    }
+
+    if (!imageBuffer) {
+      return NextResponse.json({ error: 'Failed to generate or retrieve image data.' }, { status: 500 });
+    }
+
+    console.log('☁️ Uploading to Firebase Storage...');
+    const fileName = `${Date.now()}.webp`;
+    const file = adminStorage.bucket().file(`images/${userId}/${fileName}`);
+
+    await file.save(imageBuffer, {
+      metadata: { contentType: 'image/webp' },
     });
 
     // Make the file publicly accessible
     await file.makePublic();
     
     // Get the public URL
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+    const publicUrl = `https://storage.googleapis.com/${adminStorage.bucket().name}/${file.name}`;
     
     console.log('✅ Image uploaded to Firebase Storage');
 
@@ -210,7 +309,7 @@ export async function POST(request: NextRequest) {
       prompt: prompt,
       model: model,
       imageUrl: publicUrl,
-      fileName: filename,
+      fileName: fileName,
       createdAt: new Date(),
       size: "1024x1024",
       quality: "standard"

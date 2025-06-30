@@ -9,10 +9,10 @@ import Link from 'next/link';
 const getModelInfo = (modelId: string) => {
   const models: Record<string, { name: string; cost: number; credits: number; description: string }> = {
     'flux-schnell': { name: 'FLUX Schnell', cost: 0.003, credits: 1, description: 'Fast generation, great for testing ideas' },
-    'stable-diffusion': { name: 'Stable Diffusion', cost: 0.002, credits: 1, description: 'Classic model, reliable results' },
+    'stable-diffusion': { name: 'Stable Diffusion 2.1', cost: 0.0024, credits: 1, description: 'Version 2.1, fast and reliable' },
     'flux-dev': { name: 'FLUX Dev', cost: 0.025, credits: 1, description: 'High quality, excellent detail' },
-    'flux-pro': { name: 'FLUX Pro', cost: 0.04, credits: 2, description: 'Top quality, best prompt following' },
-    'dall-e-3': { name: 'DALL-E 3', cost: 0.08, credits: 3, description: 'Premium OpenAI model' }
+    'flux-pro': { name: 'FLUX 1.1 Pro', cost: 0.04, credits: 2, description: 'Faster and improved, excellent quality' },
+    'dall-e-3': { name: 'DALL-E 3', cost: 0.08, credits: 3, description: 'Premium quality, best for complex prompts' }
   };
   return models[modelId] || models['flux-schnell'];
 };
@@ -202,14 +202,14 @@ export default function Home() {
                       >
                         <optgroup label="💨 Fast & Affordable">
                           <option value="flux-schnell">FLUX Schnell - $0.003 💨</option>
-                          <option value="stable-diffusion">Stable Diffusion - $0.002 ⚡</option>
+                          <option value="stable-diffusion">Stable Diffusion 2.1 - $0.0024 ⚡</option>
                         </optgroup>
                         <optgroup label="🎨 High Quality">
-                          <option value="flux-dev">FLUX Dev - $0.025 🎨</option>
-                          <option value="flux-pro">FLUX Pro - $0.04 ✨</option>
+                          <option value="flux-dev">FLUX Dev - $0.025 💎</option>
+                          <option value="flux-pro">FLUX 1.1 Pro - $0.04 ✨</option>
                         </optgroup>
-                        <optgroup label="🚀 Premium">
-                          <option value="dall-e-3">DALL-E 3 - $0.08 🚀</option>
+                        <optgroup label="👑 Premium">
+                          <option value="dall-e-3">DALL-E 3 - $0.08 👑</option>
                         </optgroup>
                       </select>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">

@@ -9,10 +9,10 @@ A modern, beautiful web application for generating AI images from text prompts. 
 ### 🎨 **AI Image Generation**
 - **Multiple AI Models** - Choose from 5 different models with varying quality and pricing
 - **💨 FLUX Schnell** - Ultra-fast generation ($0.003/image, 1 credit) 
-- **⚡ Stable Diffusion** - Classic reliable model ($0.002/image, 1 credit)
+- **⚡ Stable Diffusion 2.1** - Classic reliable model ($0.0024/image, 1 credit)
 - **🎨 FLUX Dev** - High quality with excellent detail ($0.025/image, 1 credit)
-- **✨ FLUX Pro** - Top quality with best prompt following ($0.04/image, 2 credits)
-- **🚀 DALL-E 3** - Premium OpenAI model ($0.08/image, 3 credits)
+- **✨ FLUX 1.1 Pro** - Top quality with best prompt following ($0.04/image, 2 credits)
+- **👑 DALL-E 3** - Premium OpenAI model ($0.08/image, 3 credits)
 - **Dynamic credit system** - Different models cost different amounts of credits
 - **Real-time generation** with loading states and progress indicators
 - **Intuitive text prompt interface** with helpful placeholders and model descriptions
@@ -185,7 +185,7 @@ src/
 ### ✅ **Fully Working Features**
 - ✅ **User authentication** (sign up/sign in/sign out)
 - ✅ **Password reset functionality** with email verification
-- ✅ **AI image generation** with 5 different models (DALL-E 3, FLUX Pro/Dev/Schnell, Stable Diffusion)
+- ✅ **AI image generation** with 5 different models (DALL-E 3, FLUX 1.1 Pro/Dev/Schnell, Stable Diffusion)
 - ✅ **Persistent image storage** in Firebase Cloud Storage
 - ✅ **Real user galleries** with actual generated images
 - ✅ **Firestore database integration** for image metadata

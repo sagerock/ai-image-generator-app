@@ -7,9 +7,9 @@ This guide will help you set up Replicate API access to unlock multiple AI image
 With Replicate integration, you get access to multiple state-of-the-art AI models:
 
 - **💨 FLUX Schnell** - Ultra-fast generation (4 steps) - $0.003/image, 1 credit
-- **⚡ Stable Diffusion** - Classic reliable model - $0.002/image, 1 credit  
+- **⚡ Stable Diffusion** - Classic reliable model - $0.0024/image, 1 credit  
 - **🎨 FLUX Dev** - High quality with excellent detail - $0.025/image, 1 credit
-- **✨ FLUX Pro** - Top quality with best prompt following - $0.04/image, 2 credits
+- **✨ FLUX 1.1 Pro** - Top quality with best prompt following - $0.04/image, 2 credits
 
 ## 📝 Setup Steps
 
@@ -44,13 +44,21 @@ REPLICATE_API_TOKEN="r8_your-actual-token-here"
 
 ## 💰 Pricing Comparison
 
-| Model | Provider | Cost/Image | Credits | Best For |
+### Available Models & Pricing
+
+| Model | Provider | Cost (per image) | Credits | Best For |
 |-------|----------|------------|---------|----------|
 | FLUX Schnell | Replicate | $0.003 | 1 | Testing, quick iterations |
-| Stable Diffusion | Replicate | $0.002 | 1 | General purpose, classic results |
+| Stable Diffusion 2.1 | Replicate | $0.0024 | 1 | Classic reliable model, proven results |
 | FLUX Dev | Replicate | $0.025 | 1 | High quality, detailed images |
-| FLUX Pro | Replicate | $0.04 | 2 | Professional quality, best prompts |
-| DALL-E 3 | OpenAI | $0.08 | 3 | Premium results, brand recognition |
+| FLUX 1.1 Pro | Replicate | $0.04 | 2 | Professional quality, best prompts |
+| DALL-E 3 | OpenAI | $0.08 | 3 | Highest quality, best for complex prompts |
+
+### Model Recommendations
+
+- For **speed and affordability**, use **FLUX Schnell** or **Stable Diffusion 2.1**.
+- For **high-quality** images, **FLUX Dev** and **FLUX 1.1 Pro** are excellent choices.
+- For the **absolute best quality** and prompt adherence, use **DALL-E 3**.
 
 ## 🔧 Model Capabilities
 
@@ -69,7 +77,7 @@ REPLICATE_API_TOKEN="r8_your-actual-token-here"
 - **Quality**: High detail, excellent composition
 - **Best for**: Professional work, detailed images
 
-### FLUX Pro
+### FLUX 1.1 Pro
 - **Speed**: Moderate  
 - **Quality**: Top-tier, best prompt adherence
 - **Best for**: Final production images, complex prompts
@@ -78,7 +86,7 @@ REPLICATE_API_TOKEN="r8_your-actual-token-here"
 
 1. **Start with FLUX Schnell** for testing prompts (cheapest)
 2. **Use FLUX Dev** for most production work (great quality/price balance)
-3. **Save FLUX Pro** for your best prompts (premium quality)
+3. **Save FLUX 1.1 Pro** for your best prompts (premium quality)
 4. **Keep DALL-E 3** for when you need OpenAI's specific style
 
 ## 🛡️ Security Notes
