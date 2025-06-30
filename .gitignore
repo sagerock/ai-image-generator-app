@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# svelte.config.js
+
+# Environment variables
+.env
+.env*.local
+
+# Firebase
+firebase-service-account.json

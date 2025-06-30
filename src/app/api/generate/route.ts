@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-// Initialize the OpenAI client
-// The OPENAI_API_KEY environment variable is automatically used
 const openai = new OpenAI();
 
 export async function POST(request: Request) {
   try {
-    const { prompt, model } = await request.json();
+    const { prompt, model, idToken } = await request.json();
 
+    // For now, we'll skip user verification and Firebase storage
+    // and just generate the image with OpenAI
+    
     console.log('API Request:', { prompt, model });
 
-    // We'll use dall-e-3 for now, but we can make this dynamic later
     const response = await openai.images.generate({
       model: "dall-e-3",
       prompt: prompt,
@@ -20,16 +20,14 @@ export async function POST(request: Request) {
     });
 
     const imageUrl = response.data?.[0]?.url;
-
     if (!imageUrl) {
-      throw new Error('Image URL not found in response');
+      throw new Error('Image URL not found in OpenAI response');
     }
 
     return NextResponse.json({ imageUrl });
-    
+
   } catch (error) {
     console.error('API Error:', error);
-    // It's good practice to check if the error is an APIError from OpenAI
     if (error instanceof OpenAI.APIError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
