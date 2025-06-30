@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { adminAuth, adminFirestore, adminStorage } from '@/lib/firebase-admin';
+import { adminAuth, adminFirestore, adminStorage, createUserProfile } from '@/lib/firebase-admin';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -36,6 +36,33 @@ export async function POST(request: NextRequest) {
     if (model !== 'dall-e-3') {
       return NextResponse.json({ error: 'Only DALL-E 3 is currently supported' }, { status: 400 });
     }
+
+    // Check user credits
+    console.log('💳 Checking user credits...');
+    const userRef = adminFirestore.collection('users').doc(userId);
+    const userDoc = await userRef.get();
+    
+    if (!userDoc.exists) {
+      // Create user profile if it doesn't exist
+      console.log('👤 Creating user profile...');
+      await createUserProfile(userId, decodedToken.email || 'unknown@email.com');
+      const newUserDoc = await userRef.get();
+      const userData = newUserDoc.data();
+      console.log(`✅ User profile created with ${userData?.credits || 0} credits`);
+    }
+    
+    const userData = userDoc.exists ? userDoc.data() : (await userRef.get()).data();
+    const currentCredits = userData?.credits || 0;
+    
+    if (currentCredits <= 0) {
+      return NextResponse.json({ 
+        error: 'Insufficient credits',
+        message: 'You need credits to generate images. Please contact support to get more credits.',
+        credits: currentCredits
+      }, { status: 402 });
+    }
+    
+    console.log(`💳 User has ${currentCredits} credits, proceeding...`);
 
     // Generate image with OpenAI
     console.log('🎨 Generating image with DALL-E 3...');
@@ -107,9 +134,19 @@ export async function POST(request: NextRequest) {
     const docRef = await adminFirestore.collection('generated-images').add(imageDoc);
     console.log('✅ Metadata saved to Firestore with ID:', docRef.id);
 
+    // Consume 1 credit
+    console.log('💳 Consuming 1 credit...');
+    const newCredits = currentCredits - 1;
+    await userRef.update({ 
+      credits: newCredits,
+      updatedAt: new Date()
+    });
+    console.log(`✅ Credit consumed. User now has ${newCredits} credits remaining`);
+
     return NextResponse.json({ 
       imageUrl: publicUrl,
       imageId: docRef.id,
+      credits: newCredits,
       message: 'Image generated and saved successfully'
     });
 

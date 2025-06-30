@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { auth } from '@/lib/firebase';
 import Auth from '@/components/Auth';
@@ -12,10 +12,50 @@ export default function Home() {
   const [model, setModel] = useState('dall-e-3');
   const [imageLoading, setImageLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
+  const [credits, setCredits] = useState<number | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check admin status (simple email check)
+  useEffect(() => {
+    if (user?.email) {
+      const adminEmails = ['admin@example.com', 'sage@sagerock.com']; // Add your admin emails here
+      setIsAdmin(adminEmails.includes(user.email));
+    }
+  }, [user]);
+
+  // Fetch user credits
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (!user) return;
+
+      try {
+        const token = await user.getIdToken();
+        const response = await fetch('/api/user-info', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setCredits(data.credits);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user info:', error);
+      }
+    };
+
+    fetchUserInfo();
+  }, [user]);
 
   const handleGenerate = async () => {
     if (!user) {
       alert("You must be logged in to generate images.");
+      return;
+    }
+
+    if (credits !== null && credits <= 0) {
+      alert("You don't have enough credits to generate an image. Please contact support to get more credits.");
       return;
     }
 
@@ -34,11 +74,21 @@ export default function Home() {
 
       if (!response.ok) {
         const errorData = await response.json();
+        if (response.status === 402) {
+          alert(errorData.message || 'Insufficient credits');
+          setCredits(errorData.credits || 0);
+          return;
+        }
         throw new Error(errorData.error || 'Failed to generate image');
       }
 
       const data = await response.json();
       setImageUrl(data.imageUrl);
+      
+      // Update credits after successful generation
+      if (data.credits !== undefined) {
+        setCredits(data.credits);
+      }
 
     } catch (error) {
       console.error(error);
@@ -74,19 +124,38 @@ export default function Home() {
                   Transform your ideas into stunning visuals
                 </p>
               </div>
-              <div className="flex space-x-3">
-                <Link
-                  href="/gallery"
-                  className="px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                >
-                  📸 Gallery
-                </Link>
-                <button
-                  onClick={() => auth.signOut()}
-                  className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
-                >
-                  Sign Out
-                </button>
+              <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-3">
+                {/* Credits Display */}
+                <div className="px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 rounded-xl border border-green-200 dark:border-green-700">
+                  <span className="text-sm font-semibold text-green-800 dark:text-green-200">
+                    💳 {credits !== null ? `${credits} credits` : 'Loading...'}
+                  </span>
+                </div>
+
+                <div className="flex space-x-3">
+                  <Link
+                    href="/gallery"
+                    className="px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    📸 Gallery
+                  </Link>
+                  
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      🛠️ Admin
+                    </Link>
+                  )}
+                  
+                  <button
+                    onClick={() => auth.signOut()}
+                    className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    Sign Out
+                  </button>
+                </div>
               </div>
             </div>
             
@@ -126,18 +195,26 @@ export default function Home() {
                     </div>
                     
                     <button 
-                      className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg transform hover:scale-105 active:scale-95"
+                      className={`w-full sm:w-auto px-8 py-3 font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg transform hover:scale-105 active:scale-95 ${
+                        credits !== null && credits <= 0
+                          ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed'
+                          : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white'
+                      }`}
                       onClick={handleGenerate}
-                      disabled={imageLoading || !prompt.trim()}
+                      disabled={imageLoading || !prompt.trim() || (credits !== null && credits <= 0)}
                     >
                       {imageLoading ? (
                         <div className="flex items-center justify-center space-x-2">
                           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                           <span>Creating Magic...</span>
                         </div>
+                      ) : credits !== null && credits <= 0 ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <span>💳 No Credits Left</span>
+                        </div>
                       ) : (
                         <div className="flex items-center justify-center space-x-2">
-                          <span>✨ Generate Image</span>
+                          <span>✨ Generate Image (1 credit)</span>
                         </div>
                       )}
                     </button>

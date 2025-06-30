@@ -18,7 +18,33 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        
+        // Create user profile with initial credits
+        try {
+          const token = await userCredential.user.getIdToken();
+          const response = await fetch('/api/users', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              action: 'create-profile',
+              userId: userCredential.user.uid,
+              email: userCredential.user.email
+            })
+          });
+          
+          if (!response.ok) {
+            console.warn('Failed to create user profile, but account was created');
+          } else {
+            console.log('✅ User profile created with free credits');
+          }
+        } catch (profileError) {
+          console.warn('Profile creation failed:', profileError);
+          // Don't fail the signup if profile creation fails
+        }
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
