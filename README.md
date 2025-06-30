@@ -7,9 +7,15 @@ A modern, beautiful web application for generating AI images from text prompts. 
 ## ✨ Features
 
 ### 🎨 **AI Image Generation**
-- **High-quality image generation** using OpenAI's DALL-E 3 model
+- **Multiple AI Models** - Choose from 5 different models with varying quality and pricing
+- **💨 FLUX Schnell** - Ultra-fast generation ($0.003/image, 1 credit) 
+- **⚡ Stable Diffusion** - Classic reliable model ($0.002/image, 1 credit)
+- **🎨 FLUX Dev** - High quality with excellent detail ($0.025/image, 1 credit)
+- **✨ FLUX Pro** - Top quality with best prompt following ($0.04/image, 2 credits)
+- **🚀 DALL-E 3** - Premium OpenAI model ($0.08/image, 3 credits)
+- **Dynamic credit system** - Different models cost different amounts of credits
 - **Real-time generation** with loading states and progress indicators
-- **Intuitive text prompt interface** with helpful placeholders
+- **Intuitive text prompt interface** with helpful placeholders and model descriptions
 - **Persistent image storage** in Firebase Cloud Storage
 - **Automatic metadata saving** to Firestore database
 
@@ -50,7 +56,7 @@ A modern, beautiful web application for generating AI images from text prompts. 
 - **Authentication**: [Firebase Authentication](https://firebase.google.com/docs/auth) with email/password
 - **Database**: [Cloud Firestore](https://firebase.google.com/docs/firestore) for image metadata
 - **Storage**: [Firebase Cloud Storage](https://firebase.google.com/docs/storage) for image files
-- **AI Integration**: [OpenAI DALL-E 3 API](https://openai.com/dall-e-3) for image generation
+- **AI Integration**: [OpenAI DALL-E 3 API](https://openai.com/dall-e-3) and [Replicate](https://replicate.com/) for multiple AI models
 - **Backend**: Firebase Admin SDK for server-side operations
 - **Development**: Turbopack for fast development builds
 - **Deployment Ready**: Optimized for Vercel deployment
@@ -62,6 +68,7 @@ A modern, beautiful web application for generating AI images from text prompts. 
 - **Node.js** (v18 or later recommended)
 - **npm** or **yarn**
 - **OpenAI API key** - Get yours at [OpenAI Platform](https://platform.openai.com/api-keys)
+- **Replicate API token** - Get yours at [Replicate](https://replicate.com/account/api-tokens)
 - **Firebase project** - Create one at [Firebase Console](https://console.firebase.google.com/)
 
 ### 📦 Installation
@@ -96,6 +103,9 @@ A modern, beautiful web application for generating AI images from text prompts. 
    ```env
    # OpenAI Configuration
    OPENAI_API_KEY="sk-your-openai-api-key-here"
+
+   # Replicate Configuration
+   REPLICATE_API_TOKEN="r8_your-replicate-api-token-here"
 
    # Firebase Web App Configuration
    NEXT_PUBLIC_FIREBASE_API_KEY="your-api-key"
@@ -175,7 +185,7 @@ src/
 ### ✅ **Fully Working Features**
 - ✅ **User authentication** (sign up/sign in/sign out)
 - ✅ **Password reset functionality** with email verification
-- ✅ **AI image generation** with DALL-E 3
+- ✅ **AI image generation** with 5 different models (DALL-E 3, FLUX Pro/Dev/Schnell, Stable Diffusion)
 - ✅ **Persistent image storage** in Firebase Cloud Storage
 - ✅ **Real user galleries** with actual generated images
 - ✅ **Firestore database integration** for image metadata
@@ -187,7 +197,7 @@ src/
 - ✅ **Real-time gallery updates** after image generation
 
 ### 🔄 **Potential Future Enhancements**
-- 🔄 Additional AI model integrations (Stable Diffusion, Leonardo AI)
+- 🔄 Additional AI model integrations (Midjourney, Leonardo AI)
 - 🔄 Image download and sharing features
 - 🔄 Image editing and manipulation tools
 - 🔄 Social features (public galleries, likes, comments)
