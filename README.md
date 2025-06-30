@@ -16,6 +16,8 @@ A modern, beautiful web application for generating AI images from text prompts. 
 ### 🔐 **User Authentication**
 - **Secure email/password authentication** via Firebase Auth
 - **Beautiful, modern sign-up and sign-in forms** with error handling
+- **Forgot password functionality** with email reset links
+- **Complete password reset flow** with email verification
 - **Protected routes** and user session management
 - **Seamless authentication state handling** across the app
 
@@ -133,7 +135,9 @@ The application features a modern, professional design with:
 
 - **`/`** - Main image generation interface with authentication
 - **`/gallery`** - Personal gallery of all your generated images
+- **`/reset-password`** - Password reset page for handling email reset links
 - **Authentication flows** - Integrated sign-up/sign-in with error handling
+- **Password recovery** - Complete forgot password flow with email verification
 - **Real-time updates** - Gallery updates immediately after image generation
 - **Image persistence** - All images permanently stored in Firebase
 
@@ -151,7 +155,9 @@ src/
 │   └── page.tsx              # Main image generation page
 ├── components/
 │   ├── Auth.tsx              # Authentication form component
-│   └── AuthProvider.tsx      # Firebase auth context provider
+│   ├── AuthProvider.tsx      # Firebase auth context provider
+│   ├── ForgotPassword.tsx    # Password reset component
+│   └── Notification.tsx      # Toast notification system
 └── lib/
     ├── firebase.ts           # Firebase client configuration
     └── firebase-admin.ts     # Firebase admin SDK configuration
@@ -168,11 +174,13 @@ src/
 
 ### ✅ **Fully Working Features**
 - ✅ **User authentication** (sign up/sign in/sign out)
+- ✅ **Password reset functionality** with email verification
 - ✅ **AI image generation** with DALL-E 3
 - ✅ **Persistent image storage** in Firebase Cloud Storage
 - ✅ **Real user galleries** with actual generated images
 - ✅ **Firestore database integration** for image metadata
 - ✅ **Modern, responsive UI design** with animations
+- ✅ **Toast notification system** for user feedback
 - ✅ **Error handling and loading states** throughout
 - ✅ **Production-ready security rules** for Firebase
 - ✅ **User data isolation** and proper authentication

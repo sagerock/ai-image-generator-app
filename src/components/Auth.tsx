@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import ForgotPassword from './ForgotPassword';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(true);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +57,15 @@ const Auth = () => {
     }
   };
 
+  // Show forgot password component if requested
+  if (showForgotPassword) {
+    return (
+      <ForgotPassword 
+        onBackToLogin={() => setShowForgotPassword(false)} 
+      />
+    );
+  }
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
       <div className="text-center mb-8">
@@ -89,9 +100,20 @@ const Auth = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2" htmlFor="password">
-            Password
-          </label>
+          <div className="flex justify-between items-center mb-2">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200" htmlFor="password">
+              Password
+            </label>
+            {!isSignUp && (
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200"
+              >
+                Forgot Password?
+              </button>
+            )}
+          </div>
           <input
             type="password"
             id="password"
