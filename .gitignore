@@ -48,3 +48,8 @@ next-env.d.ts
 
 # Firebase
 firebase-service-account.json
+
+# Firebase setup files (for security/deployment)
+firestore.rules
+storage.rules
+FIREBASE_SETUP.md
