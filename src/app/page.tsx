@@ -7,6 +7,7 @@ import Auth from '@/components/Auth';
 import Link from 'next/link';
 import Notification from '../components/Notification';
 import Header from '@/components/Header';
+import SubscriptionManager from '@/components/SubscriptionManager';
 
 const getModelInfo = (modelId: string) => {
   const models: Record<string, { name: string; cost: number; credits: number; description: string; supportedRatios: string[] }> = {
@@ -290,6 +291,11 @@ export default function Home() {
                   </div>
                 </div>
               )}
+              
+              {/* Subscription Management */}
+              <div className="mt-8">
+                <SubscriptionManager />
+              </div>
             </div>
           </div>
         ) : (

@@ -40,26 +40,30 @@ export async function POST(request: NextRequest) {
         
         console.log(`💳 Processing payment for user ${userId}: ${creditsToAdd} credits`);
 
-        // Update user credits
-        const userRef = adminFirestore.collection('users').doc(userId);
-        await userRef.update({
-          credits: FieldValue.increment(creditsToAdd),
-          updatedAt: FieldValue.serverTimestamp()
-        });
+        // Only add credits for one-time purchases, not subscriptions
+        // Subscriptions get credits via invoice.payment_succeeded to handle recurring payments
+        if (type !== 'subscription') {
+          // Update user credits for one-time purchases
+          const userRef = adminFirestore.collection('users').doc(userId);
+          await userRef.update({
+            credits: FieldValue.increment(creditsToAdd),
+            updatedAt: FieldValue.serverTimestamp()
+          });
 
-        // Record the transaction
-        await adminFirestore.collection('transactions').add({
-          userId,
-          type,
-          amount: session.amount_total ? session.amount_total / 100 : 0, // Convert from cents
-          credits: creditsToAdd,
-          stripeSessionId: session.id,
-          stripeCustomerId: session.customer,
-          status: 'completed',
-          createdAt: FieldValue.serverTimestamp()
-        });
+          // Record the transaction
+          await adminFirestore.collection('transactions').add({
+            userId,
+            type,
+            amount: session.amount_total ? session.amount_total / 100 : 0, // Convert from cents
+            credits: creditsToAdd,
+            stripeSessionId: session.id,
+            stripeCustomerId: session.customer,
+            status: 'completed',
+            createdAt: FieldValue.serverTimestamp()
+          });
+        }
 
-        // If it's a subscription, set up the subscription record
+        // If it's a subscription, set up the subscription record (but don't add credits here)
         if (type === 'subscription' && session.subscription) {
           await adminFirestore.collection('subscriptions').add({
             userId,
@@ -70,9 +74,11 @@ export async function POST(request: NextRequest) {
             currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
             createdAt: FieldValue.serverTimestamp()
           });
+          
+          console.log(`✅ Subscription created for user ${userId} - credits will be added via invoice`);
+        } else {
+          console.log(`✅ Payment processed successfully for user ${userId}`);
         }
-
-        console.log(`✅ Payment processed successfully for user ${userId}`);
         break;
       }
 
