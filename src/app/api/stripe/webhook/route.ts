@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import { getServerStripe } from '@/lib/stripe';
 import { adminFirestore, FieldValue } from '@/lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
 
     let event;
     try {
+      const stripe = getServerStripe();
       event = stripe.webhooks.constructEvent(
         body,
         signature,

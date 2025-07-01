@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from './AuthProvider';
-import { CREDIT_PACKAGES, SUBSCRIPTION_PLAN } from '@/lib/stripe';
+import { CREDIT_PACKAGES, SUBSCRIPTION_PLAN } from '@/lib/stripe-config';
 
 interface PaymentModalProps {
   isOpen: boolean;
