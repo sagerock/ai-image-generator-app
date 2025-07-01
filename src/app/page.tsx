@@ -11,6 +11,8 @@ const getModelInfo = (modelId: string) => {
   const models: Record<string, { name: string; cost: number; credits: number; description: string; supportedRatios: string[] }> = {
     'flux-schnell': { name: 'FLUX Schnell', cost: 0.003, credits: 1, description: 'Fast generation, great for testing ideas', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
     'flux-dev': { name: 'FLUX Dev', cost: 0.025, credits: 1, description: 'High quality, excellent detail', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
+    'ideogram-turbo': { name: 'Ideogram v2a Turbo', cost: 0.03, credits: 1, description: 'Fast & affordable, great text rendering + multiple styles', supportedRatios: ['1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3', '16:10', '10:16', '3:1', '1:3'] },
+    'playground-v25': { name: 'Playground v2.5', cost: 0.13, credits: 1, description: 'State-of-the-art aesthetic quality, beats DALL-E 3 & Midjourney', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
     'flux-pro': { name: 'FLUX 1.1 Pro', cost: 0.04, credits: 2, description: 'Faster and improved, excellent quality', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
     'seedream-3': { name: 'Seedream 3.0', cost: 0.03, credits: 2, description: 'Native 2K resolution, excellent text generation', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16', '3:2', '2:3'] },
     'ideogram-3': { name: 'Ideogram v3 Balanced', cost: 0.07, credits: 2, description: 'Balance speed, quality & cost, excellent text rendering', supportedRatios: ['1:3', '3:1', '1:2', '2:1', '9:16', '16:9', '10:16', '16:10', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '1:1'] },
@@ -224,13 +226,16 @@ export default function Home() {
                       >
                         <optgroup label="💨 Fast & Affordable">
                           <option value="flux-schnell">FLUX Schnell - (1 credit)</option>
+                          <option value="ideogram-turbo">Ideogram v2a Turbo - (1 credit)</option>
                         </optgroup>
                         <optgroup label="🎨 High Quality">
                           <option value="flux-dev">FLUX Dev - (1 credit)</option>
+                          <option value="playground-v25">Playground v2.5 - (1 credit)</option>
                           <option value="flux-pro">FLUX 1.1 Pro - (2 credits)</option>
                         </optgroup>
                         <optgroup label="👑 Premium">
                           <option value="seedream-3">Seedream 3.0 - (2 credits)</option>
+                          <option value="ideogram-3">Ideogram v3 Balanced - (2 credits)</option>
                           <option value="imagen-4">Imagen 4 - (3 credits)</option>
                           <option value="dall-e-3">DALL-E 3 - (3 credits)</option>
                         </optgroup>

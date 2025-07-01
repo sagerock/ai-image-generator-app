@@ -31,6 +31,18 @@ const getModelConfig = (modelId: string) => {
       provider: 'replicate',
       replicateModel: 'black-forest-labs/flux-dev'
     },
+    'ideogram-turbo': { 
+      name: 'Ideogram v2a Turbo', 
+      credits: 1, 
+      provider: 'replicate', 
+      replicateModel: 'ideogram-ai/ideogram-v2a-turbo'
+    },
+    'playground-v25': { 
+      name: 'Playground v2.5', 
+      credits: 1, 
+      provider: 'replicate', 
+      replicateModel: 'playgroundai/playground-v2.5-1024px-aesthetic:a45f82a1382bed5c7aeb861dac7c7d191b0fdf74d8d57c4a0e6ed7d4d0bf7d24'
+    },
     'flux-pro': {
       name: 'FLUX 1.1 Pro',
       credits: 2,
@@ -190,6 +202,31 @@ export async function POST(request: NextRequest) {
         input.aspect_ratio = aspectRatio;
         input.size = "regular"; // regular = 1 megapixel
         input.guidance_scale = 2.5;
+      } else if (model === 'ideogram-turbo') {
+        // Ideogram v2a Turbo parameter structure
+        input.aspect_ratio = aspectRatio;
+        input.style_type = "Auto"; // None, Auto, General, Realistic, Design, Render 3D, Anime
+        input.magic_prompt_option = "Auto"; // Auto enhances prompt quality
+      } else if (model === 'playground-v25') {
+        // Playground v2.5 uses width/height instead of aspect_ratio
+        const getPlaygroundDimensions = (ratio: string): { width: number; height: number } => {
+          switch (ratio) {
+            case '16:9': return { width: 1344, height: 768 };
+            case '4:3': return { width: 1152, height: 896 };
+            case '3:4': return { width: 896, height: 1152 };
+            case '9:16': return { width: 768, height: 1344 };
+            case '1:1':
+            default:
+              return { width: 1024, height: 1024 };
+          }
+        };
+        const dimensions = getPlaygroundDimensions(aspectRatio);
+        input.width = dimensions.width;
+        input.height = dimensions.height;
+        input.scheduler = "DPMSolver++"; // Recommended scheduler
+        input.guidance_scale = 3; // Recommended for DPMSolver++
+        input.num_inference_steps = 25;
+        input.apply_watermark = false; // Disable watermarking
       } else if (model === 'ideogram-3') {
         // Ideogram v3 Balanced parameter structure
         input.aspect_ratio = aspectRatio;
