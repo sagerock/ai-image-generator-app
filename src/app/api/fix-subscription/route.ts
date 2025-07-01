@@ -61,10 +61,10 @@ export async function POST(request: NextRequest) {
       .get();
     console.log(`📦 Firestore subscription records found: ${subscriptionsSnapshot.size}`);
 
+    let addedCredits = 0;
     if (subscriptionsSnapshot.empty) {
       console.log(`📝 Creating missing subscription record`);
       
-      // Create subscription record
       await adminFirestore.collection('subscriptions').add({
         userId,
         stripeSubscriptionId: subscription.id,
@@ -76,37 +76,42 @@ export async function POST(request: NextRequest) {
       });
 
       console.log(`✅ Subscription record created`);
+      addedCredits = 400;
     } else {
       console.log(`✅ Subscription record already exists`);
     }
 
-    // Add 400 credits for the current subscription period
-    const userRef = adminFirestore.collection('users').doc(userId);
-    await userRef.update({
-      credits: FieldValue.increment(400),
-      updatedAt: FieldValue.serverTimestamp()
-    });
+    if (addedCredits > 0) {
+      // Add credits only if we created the subscription record
+      const userRef = adminFirestore.collection('users').doc(userId);
+      await userRef.update({
+        credits: FieldValue.increment(addedCredits),
+        updatedAt: FieldValue.serverTimestamp()
+      });
 
-    // Record the transaction
-    await adminFirestore.collection('transactions').add({
-      userId,
-      type: 'subscription_fix',
-      amount: 10.00,
-      credits: 400,
-      stripeSubscriptionId: subscription.id,
-      stripeCustomerId: customer.id,
-      status: 'completed',
-      note: 'Manual subscription fix - added missing credits',
-      createdAt: FieldValue.serverTimestamp()
-    });
+      // Record the transaction
+      await adminFirestore.collection('transactions').add({
+        userId,
+        type: 'subscription_fix',
+        amount: 10.00,
+        credits: addedCredits,
+        stripeSubscriptionId: subscription.id,
+        stripeCustomerId: customer.id,
+        status: 'completed',
+        note: 'Manual subscription fix - added missing credits',
+        createdAt: FieldValue.serverTimestamp()
+      });
 
-    console.log(`💳 Added 400 credits for user ${userId}`);
+      console.log(`💳 Added ${addedCredits} credits for user ${userId}`);
+    } else {
+      console.log('ℹ️ No credits added because subscription record already existed');
+    }
 
     return NextResponse.json({
       success: true,
-      message: 'Subscription fixed and credits added',
+      message: addedCredits > 0 ? 'Subscription fixed and credits added' : 'Subscription record already exists – no credits added',
       subscriptionId: subscription.id,
-      creditsAdded: 400,
+      creditsAdded: addedCredits,
       subscriptionStatus: subscription.status
     });
 

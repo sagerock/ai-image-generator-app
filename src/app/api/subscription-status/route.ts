@@ -17,7 +17,6 @@ export async function GET(request: NextRequest) {
     const subscriptionsSnapshot = await adminFirestore
       .collection('subscriptions')
       .where('userId', '==', userId)
-      .orderBy('createdAt', 'desc')
       .limit(5)
       .get();
 

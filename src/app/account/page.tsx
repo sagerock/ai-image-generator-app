@@ -170,8 +170,8 @@ export default function AccountPage() {
                       alert('Failed to fix subscription. Please try again.');
                     }
                   }}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors"
-                  disabled={subscriptionStatus === 'active'}
+                  className={`px-6 py-3 ${subscriptionStatus ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-xl font-medium transition-colors`}
+                  disabled={Boolean(subscriptionStatus)}
                 >
                   🔧 Fix Subscription
                 </button>
