@@ -8,7 +8,11 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 // Client-side Stripe instance
 export const getStripe = () => {
-  return loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+  const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+  if (!key) {
+    throw new Error('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not defined');
+  }
+  return loadStripe(key);
 };
 
 // Credit packages for one-time purchases
