@@ -46,7 +46,8 @@ export async function GET(request: NextRequest) {
       },
       stripeSubscriptionId: subscription.stripeSubscriptionId,
       currentPeriodEnd: subscription.currentPeriodEnd,
-      canceledAt: subscription.canceledAt || null
+      cancelAt: subscription.cancelAt || null,
+      cancelAtPeriodEnd: subscription.cancelAtPeriodEnd || false
     });
 
   } catch (error) {

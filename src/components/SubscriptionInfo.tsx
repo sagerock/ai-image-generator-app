@@ -14,6 +14,8 @@ interface SubscriptionData {
   stripeSubscriptionId?: string;
   currentPeriodEnd?: any;
   canceledAt?: any;
+  cancelAtPeriodEnd?: boolean;
+  cancelAt?: any;
 }
 
 export default function SubscriptionInfo() {
@@ -45,6 +47,12 @@ export default function SubscriptionInfo() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fmtDate = (d: any) => {
+    if(!d) return '';
+    const dt = typeof d === 'string' ? new Date(d) : new Date(d.seconds? d.seconds*1000:d);
+    return dt.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
   };
 
   if (loading) {
@@ -101,7 +109,8 @@ export default function SubscriptionInfo() {
                     ? 'text-orange-600'
                     : 'text-gray-600'
                 }`}>
-                  {subscriptionData.status === 'active' && '✅ Active subscription'}
+                  {subscriptionData.status === 'active' && !subscriptionData.cancelAtPeriodEnd && '✅ Active subscription'}
+                  {subscriptionData.status === 'active' && subscriptionData.cancelAtPeriodEnd && `⏸️ Cancels on ${fmtDate(subscriptionData.cancelAt)}`}
                   {subscriptionData.status === 'canceled' && '⏸️ Canceled - ends at period'}
                   {subscriptionData.status === 'incomplete' && '⚠️ Payment required'}
                   {subscriptionData.status === 'past_due' && '⚠️ Payment overdue'}
@@ -126,7 +135,9 @@ export default function SubscriptionInfo() {
                     ? 'text-orange-600'
                     : 'text-gray-600'
                 }`}>
-                  {subscriptionData.status === 'active' ? 'Auto-renews monthly' : 'Access until period ends'}
+                  {subscriptionData.status === 'active' && !subscriptionData.cancelAtPeriodEnd && 'Auto-renews monthly'}
+                  {subscriptionData.status === 'active' && subscriptionData.cancelAtPeriodEnd && 'Ends after current period'}
+                  {subscriptionData.status !== 'active' && 'Access until period ends'}
                 </div>
               </div>
             </div>
@@ -162,7 +173,7 @@ export default function SubscriptionInfo() {
               >
                 Manage
               </button>
-              {subscriptionData.status === 'active' && (
+              {subscriptionData.status === 'active' && !subscriptionData.cancelAtPeriodEnd && (
                 <button
                   onClick={async () => {
                     if (!confirm('Cancel subscription at period end?')) return;

@@ -38,7 +38,8 @@ export async function POST(request: NextRequest) {
     // Update Firestore status
     await subDoc.ref.update({
       status: updated.status,
-      canceledAt: FieldValue.serverTimestamp(),
+      cancelAtPeriodEnd: true,
+      cancelAt: (updated as any).cancel_at ? new Date((updated as any).cancel_at * 1000) : null,
       updatedAt: FieldValue.serverTimestamp()
     });
 
