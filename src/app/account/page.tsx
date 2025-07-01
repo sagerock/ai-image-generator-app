@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import Header from '@/components/Header';
 import SubscriptionManager from '@/components/SubscriptionManager';
+import SubscriptionInfo from '@/components/SubscriptionInfo';
 import PaymentModal from '@/components/PaymentModal';
 
 export default function AccountPage() {
@@ -126,7 +127,7 @@ export default function AccountPage() {
           </div>
 
           {/* Subscription Management */}
-          <SubscriptionManager />
+          <SubscriptionInfo />
 
           {/* Quick Actions */}
           <div className="bg-white rounded-xl border border-stone-200 p-6">
