@@ -433,7 +433,18 @@ export default function Home() {
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
                   <h2 className="text-4xl font-bold text-stone-900 mb-4">Simple, Transparent Pricing</h2>
-                  <p className="text-xl text-stone-600">Choose the plan that works best for you</p>
+                  <p className="text-xl text-stone-600 mb-8">Choose the plan that works best for you</p>
+                  
+                  {/* Free Credits Banner */}
+                  <div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl p-6 mb-8 max-w-2xl mx-auto shadow-lg">
+                    <div className="flex items-center justify-center">
+                      <span className="text-3xl mr-3">🚀</span>
+                      <div>
+                        <div className="font-bold text-xl">All New Users Get 50 Free Credits!</div>
+                        <div className="text-emerald-100 text-sm mt-1">No credit card required • Start creating right away • Worth up to $12.50</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -630,10 +641,20 @@ export default function Home() {
                 <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 mb-4">
                   Ready to Create?
                 </h2>
-                <p className="text-lg text-stone-600 mb-8">
-                  Join thousands of creators already using Optic Engine to bring their visions to life. 
-                  Sign up now and get started with our ultra-affordable models!
+                <p className="text-lg text-stone-600 mb-4">
+                  Join thousands of creators already using Optic Engine to bring their visions to life.
                 </p>
+                
+                {/* Free Credits Highlight */}
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6 mb-8">
+                  <div className="flex items-center justify-center mb-2">
+                    <span className="text-2xl mr-2">🎁</span>
+                    <h3 className="text-xl font-bold text-emerald-800">New Users Get 50 Free Credits!</h3>
+                  </div>
+                  <p className="text-emerald-700 font-medium">
+                    No credit card required • Start creating immediately • Worth $5-12.50 value
+                  </p>
+                </div>
                 
                 <div id="auth" className="mb-8">
                   <Auth />
