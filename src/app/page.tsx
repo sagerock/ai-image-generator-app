@@ -12,6 +12,9 @@ const getModelInfo = (modelId: string) => {
     'flux-schnell': { name: 'FLUX Schnell', cost: 0.003, credits: 1, description: 'Fast generation, great for testing ideas', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
     'flux-dev': { name: 'FLUX Dev', cost: 0.025, credits: 1, description: 'High quality, excellent detail', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
     'flux-pro': { name: 'FLUX 1.1 Pro', cost: 0.04, credits: 2, description: 'Faster and improved, excellent quality', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
+    'seedream-3': { name: 'Seedream 3.0', cost: 0.03, credits: 2, description: 'Native 2K resolution, excellent text generation', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16', '3:2', '2:3'] },
+    'ideogram-3': { name: 'Ideogram v3 Balanced', cost: 0.07, credits: 2, description: 'Balance speed, quality & cost, excellent text rendering', supportedRatios: ['1:3', '3:1', '1:2', '2:1', '9:16', '16:9', '10:16', '16:10', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '1:1'] },
+    'imagen-4': { name: 'Imagen 4', cost: 0.05, credits: 3, description: 'Google flagship, superior detail & typography', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
     'dall-e-3': { name: 'DALL-E 3', cost: 0.08, credits: 3, description: 'Premium quality, best for complex prompts', supportedRatios: ['1:1', '16:9', '9:16'] }
   };
   return models[modelId] || models['flux-schnell'];
@@ -29,7 +32,7 @@ export default function Home() {
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [showNotification, setShowNotification] = useState(false);
 
-  const availableRatios = ['1:1', '16:9', '4:3', '3:4', '9:16'];
+  const availableRatios = ['1:1', '16:9', '4:3', '3:4', '9:16', '3:2', '2:3', '1:2', '2:1', '1:3', '3:1', '10:16', '16:10', '4:5', '5:4'];
 
   // Check admin status (simple email check)
   useEffect(() => {
@@ -227,6 +230,8 @@ export default function Home() {
                           <option value="flux-pro">FLUX 1.1 Pro - (2 credits)</option>
                         </optgroup>
                         <optgroup label="👑 Premium">
+                          <option value="seedream-3">Seedream 3.0 - (2 credits)</option>
+                          <option value="imagen-4">Imagen 4 - (3 credits)</option>
                           <option value="dall-e-3">DALL-E 3 - (3 credits)</option>
                         </optgroup>
                       </select>

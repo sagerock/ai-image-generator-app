@@ -37,6 +37,24 @@ const getModelConfig = (modelId: string) => {
       provider: 'replicate',
       replicateModel: 'black-forest-labs/flux-1.1-pro'
     },
+    'seedream-3': { 
+      name: 'Seedream 3.0', 
+      credits: 2, 
+      provider: 'replicate', 
+      replicateModel: 'bytedance/seedream-3'
+    },
+    'ideogram-3': { 
+      name: 'Ideogram v3 Balanced', 
+      credits: 2, 
+      provider: 'replicate', 
+      replicateModel: 'ideogram-ai/ideogram-v3-balanced'
+    },
+    'imagen-4': { 
+      name: 'Imagen 4', 
+      credits: 3, 
+      provider: 'replicate', 
+      replicateModel: 'google/imagen-4'
+    },
     'dall-e-3': { 
       name: 'DALL-E 3', 
       credits: 3, 
@@ -149,18 +167,39 @@ export async function POST(request: NextRequest) {
 
       const input: any = { prompt };
       
-      // All FLUX models use aspect_ratio, common parameters
-      input.aspect_ratio = aspectRatio;
-      input.output_format = "webp";
-      input.output_quality = 90;
-
       // Model-specific parameters
       if (model === 'flux-schnell') {
+        // FLUX models use aspect_ratio
+        input.aspect_ratio = aspectRatio;
+        input.output_format = "webp";
+        input.output_quality = 90;
         input.go_fast = true;
       } else if (model === 'flux-dev') {
-        // FLUX Dev uses default parameters
+        // FLUX models use aspect_ratio
+        input.aspect_ratio = aspectRatio;
+        input.output_format = "webp";
+        input.output_quality = 90;
       } else if (model === 'flux-pro') {
+        // FLUX models use aspect_ratio
+        input.aspect_ratio = aspectRatio;
+        input.output_format = "webp";
+        input.output_quality = 90;
         input.safety_tolerance = 2;
+      } else if (model === 'seedream-3') {
+        // Seedream-3 has its own parameter structure
+        input.aspect_ratio = aspectRatio;
+        input.size = "regular"; // regular = 1 megapixel
+        input.guidance_scale = 2.5;
+      } else if (model === 'ideogram-3') {
+        // Ideogram v3 Balanced parameter structure
+        input.aspect_ratio = aspectRatio;
+        input.style_type = "Auto"; // Auto, General, Realistic, Design
+        input.magic_prompt_option = "Auto"; // Auto enhances prompt quality
+      } else if (model === 'imagen-4') {
+        // Imagen 4 has a simple parameter structure
+        input.aspect_ratio = aspectRatio;
+        input.output_format = "jpg";
+        input.safety_filter_level = "block_only_high"; // Most permissive setting
       }
 
       console.log('📤 Sending request to Replicate with input:', JSON.stringify(input, null, 2));
