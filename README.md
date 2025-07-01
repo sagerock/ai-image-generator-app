@@ -264,3 +264,5 @@ If you encounter any issues during setup or usage:
 5. **Verify Firebase services** are enabled in the Firebase Console
 
 **Your AI Image Creator is ready to bring your imagination to life!** 🎨✨
+
+<!-- Auto-deployment test -->
