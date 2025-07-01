@@ -67,19 +67,31 @@ export default function SubscriptionInfo() {
           </div>
         </div>
 
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <div className="flex items-start">
-            <span className="text-amber-500 mr-2">⚠️</span>
-            <div className="text-sm text-amber-800">
-              <div className="font-medium mb-1">Need to manage your subscription?</div>
-              <div className="text-amber-700">
-                To cancel, update payment methods, or download invoices, please contact support at{' '}
-                <a href="mailto:support@optic-engine.com" className="underline hover:no-underline">
-                  support@optic-engine.com
-                </a>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-start">
+              <span className="text-blue-500 mr-2">🔧</span>
+              <div className="text-sm text-blue-800">
+                <div className="font-medium mb-1">Manage Your Subscription</div>
+                <div className="text-blue-700">
+                  Cancel, update payment methods, or download invoices
+                </div>
               </div>
             </div>
+            <button
+              onClick={() => window.open('https://billing.stripe.com/p/login/00wfZa1cG6sP0QxfU7bMQ00', '_blank', 'noopener,noreferrer')}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm"
+            >
+              Manage
+            </button>
           </div>
+        </div>
+
+        <div className="text-xs text-stone-500 text-center">
+          Need help? Email{' '}
+          <a href="mailto:sage@sagerock.com" className="underline hover:no-underline">
+            sage@sagerock.com
+          </a>
         </div>
 
         <div className="text-sm text-stone-500">

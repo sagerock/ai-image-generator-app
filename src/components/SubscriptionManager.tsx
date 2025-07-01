@@ -42,37 +42,12 @@ export default function SubscriptionManager() {
     }
   };
 
-  const openCustomerPortal = async () => {
+  const openCustomerPortal = () => {
     if (!user) return;
     
-    setPortalLoading(true);
-    try {
-      const token = await user.getIdToken();
-      const response = await fetch('/api/stripe/customer-portal', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const { url } = await response.json();
-        window.location.href = url;
-      } else {
-        const error = await response.json();
-        if (response.status === 404) {
-          alert(error.error || 'No active subscription found. Subscribe first to manage your plan!');
-        } else {
-          console.error('Portal error:', error);
-          alert(`Error: ${error.error || 'Unable to open customer portal. Please try again.'}`);
-        }
-      }
-    } catch (error) {
-      console.error('Error opening customer portal:', error);
-      alert('Error opening customer portal. Please try again.');
-    } finally {
-      setPortalLoading(false);
-    }
+    // Direct link to your Stripe customer portal
+    const portalUrl = 'https://billing.stripe.com/p/login/00wfZa1cG6sP0QxfU7bMQ00';
+    window.open(portalUrl, '_blank', 'noopener,noreferrer');
   };
 
   if (loading) {
