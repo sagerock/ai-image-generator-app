@@ -46,10 +46,12 @@ export async function GET(request: NextRequest) {
       users.map(async (user) => {
         try {
           const stats = await getUserStats(user.id);
+          
           return {
             id: user.id,
             email: user.email,
             credits: stats.credits,
+            creditsUsed: stats.creditsUsed,
             imageCount: stats.imageCount,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt
@@ -60,6 +62,7 @@ export async function GET(request: NextRequest) {
             id: user.id,
             email: user.email,
             credits: 0,
+            creditsUsed: 0,
             imageCount: 0,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
@@ -80,7 +83,8 @@ export async function GET(request: NextRequest) {
       users: usersWithStats,
       totalUsers: usersWithStats.length,
       totalImages: usersWithStats.reduce((sum, user) => sum + user.imageCount, 0),
-      totalCredits: usersWithStats.reduce((sum, user) => sum + user.credits, 0)
+      totalCredits: usersWithStats.reduce((sum, user) => sum + user.credits, 0),
+      totalCreditsUsed: usersWithStats.reduce((sum, user) => sum + user.creditsUsed, 0)
     });
 
   } catch (error) {

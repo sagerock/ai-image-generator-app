@@ -117,24 +117,27 @@ export default function Gallery() {
   };
 
   // Download image function
-  const downloadImage = async (imageUrl: string, prompt: string, model: string) => {
+  const downloadImage = (imageUrl: string, prompt: string, model: string) => {
     try {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      
       // Create a clean filename
       const cleanPrompt = prompt.slice(0, 30).replace(/[^a-zA-Z0-9]/g, '_');
-      link.download = `${model}_${cleanPrompt}.webp`;
+      const filename = `${model}_${cleanPrompt}.webp`;
       
+      // Use a simple link download approach that works with Firebase Storage
+      const link = document.createElement('a');
+      link.href = imageUrl;
+      link.download = filename;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      
+      // Temporarily add to DOM and click
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Failed to download image:', error);
+      // Fallback: open in new tab
+      window.open(imageUrl, '_blank');
     }
   };
 

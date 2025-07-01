@@ -10,6 +10,7 @@ interface User {
   email: string;
   credits: number;
   imageCount: number;
+  creditsUsed: number;
   createdAt: string | null;
   updatedAt: string | null;
   error?: string;
@@ -20,6 +21,7 @@ interface AdminData {
   totalUsers: number;
   totalImages: number;
   totalCredits: number;
+  totalCreditsUsed: number;
 }
 
 const AdminDashboard = () => {
@@ -190,11 +192,11 @@ const AdminDashboard = () => {
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-              <div className="text-3xl mb-2">📊</div>
+              <div className="text-3xl mb-2">🔥</div>
               <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {adminData.totalImages > 0 ? (adminData.totalImages / adminData.totalUsers).toFixed(1) : '0'}
+                {adminData.totalCreditsUsed}
               </div>
-              <div className="text-gray-600 dark:text-gray-300">Avg Images/User</div>
+              <div className="text-gray-600 dark:text-gray-300">Credits Used</div>
             </div>
           </div>
         )}
@@ -228,6 +230,9 @@ const AdminDashboard = () => {
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
                       Credits
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
+                      Credits Used
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
                       Images Created
@@ -279,6 +284,11 @@ const AdminDashboard = () => {
                             💳 {userData.credits}
                           </span>
                         )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                          🔥 {userData.creditsUsed || 0}
+                        </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                         🎨 {userData.imageCount}

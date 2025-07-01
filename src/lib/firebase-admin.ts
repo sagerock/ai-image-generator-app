@@ -83,14 +83,40 @@ export async function getUserStats(userId: string) {
     const userDoc = await adminFirestore.collection('users').doc(userId).get();
     const userData = userDoc.exists ? userDoc.data() : null;
     
-    // Get image count
+    // Get images and calculate actual credits used
     const imagesRef = adminFirestore.collection('generated-images');
     const imagesSnapshot = await imagesRef.where('userId', '==', userId).get();
     const imageCount = imagesSnapshot.size;
     
+    // Calculate actual credits used based on models used
+    let creditsUsed = 0;
+    imagesSnapshot.forEach(doc => {
+      const imageData = doc.data();
+      const model = imageData.model || 'flux-schnell'; // Default fallback
+      
+      // Map model to credits (matching the current credit structure)
+      const modelCredits: Record<string, number> = {
+        'lcm': 1,
+        'realistic-vision': 1,
+        'flux-schnell': 1,
+        'proteus-v03': 2,
+        'flux-dev': 2,
+        'ideogram-turbo': 2,
+        'seedream-3': 2,
+        'flux-pro': 3,
+        'ideogram-3': 3,
+        'imagen-4': 3,
+        'dall-e-3': 3,
+        'playground-v25': 5
+      };
+      
+      creditsUsed += modelCredits[model] || 2; // Default to 2 credits if model unknown
+    });
+    
     return {
       userData,
       imageCount,
+      creditsUsed,
       credits: userData?.credits || 0
     };
   } catch (error) {
