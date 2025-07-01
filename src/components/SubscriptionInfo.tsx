@@ -50,9 +50,16 @@ export default function SubscriptionInfo() {
   };
 
   const fmtDate = (d: any) => {
-    if(!d) return '';
-    const dt = typeof d === 'string' ? new Date(d) : new Date(d.seconds? d.seconds*1000:d);
-    return dt.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+    if (!d) return '';
+    try {
+      if (typeof d === 'string') return new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+      if (typeof d === 'number') return new Date(d * 1000).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+      if (d.seconds) return new Date(d.seconds * 1000).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+      if (d._seconds) return new Date(d._seconds * 1000).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+      return '';
+    } catch {
+      return '';
+    }
   };
 
   if (loading) {
@@ -110,7 +117,7 @@ export default function SubscriptionInfo() {
                     : 'text-gray-600'
                 }`}>
                   {subscriptionData.status === 'active' && !subscriptionData.cancelAtPeriodEnd && '✅ Active subscription'}
-                  {subscriptionData.status === 'active' && subscriptionData.cancelAtPeriodEnd && `⏸️ Cancels on ${fmtDate(subscriptionData.cancelAt)}`}
+                  {subscriptionData.status === 'active' && subscriptionData.cancelAtPeriodEnd && (fmtDate(subscriptionData.cancelAt)? `⏸️ Cancels on ${fmtDate(subscriptionData.cancelAt)}` : '⏸️ Cancels after current period')}
                   {subscriptionData.status === 'canceled' && '⏸️ Canceled - ends at period'}
                   {subscriptionData.status === 'incomplete' && '⚠️ Payment required'}
                   {subscriptionData.status === 'past_due' && '⚠️ Payment overdue'}
