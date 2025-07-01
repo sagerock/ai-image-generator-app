@@ -428,6 +428,104 @@ export default function Home() {
               </div>
             </section>
 
+            {/* Pricing Section */}
+            <section id="pricing" className="py-16 bg-white">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-16">
+                  <h2 className="text-4xl font-bold text-stone-900 mb-4">Simple, Transparent Pricing</h2>
+                  <p className="text-xl text-stone-600">Choose the plan that works best for you</p>
+                </div>
+
+                <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                  {/* Monthly Subscription */}
+                  <div className="bg-white rounded-2xl shadow-xl border-2 border-emerald-200 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 right-0 bg-emerald-600 text-white text-center py-2 text-sm font-semibold">
+                      ⭐ Most Popular
+                    </div>
+                    <div className="p-8 pt-16">
+                      <div className="text-center mb-8">
+                        <h3 className="text-2xl font-bold text-stone-900 mb-2">Monthly Plan</h3>
+                        <div className="text-4xl font-bold text-emerald-600 mb-2">$10<span className="text-lg text-stone-600">/month</span></div>
+                        <p className="text-stone-600">400 credits per month</p>
+                      </div>
+                      
+                      <div className="space-y-4 mb-8">
+                        <div className="flex items-center">
+                          <div className="text-emerald-600 mr-3">✅</div>
+                          <span className="text-stone-700">400 credits every month</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="text-emerald-600 mr-3">✅</div>
+                          <span className="text-stone-700">Unused credits roll over</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="text-emerald-600 mr-3">✅</div>
+                          <span className="text-stone-700">Access to all 12 AI models</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="text-emerald-600 mr-3">✅</div>
+                          <span className="text-stone-700">Cancel anytime</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="text-emerald-600 mr-3">✅</div>
+                          <span className="text-stone-700">Priority support</span>
+                        </div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className="text-sm text-stone-500 mb-4">Best value for regular users</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Credit Packages */}
+                  <div className="bg-white rounded-2xl shadow-lg border border-stone-200">
+                    <div className="p-8">
+                      <div className="text-center mb-8">
+                        <h3 className="text-2xl font-bold text-stone-900 mb-2">Pay As You Go</h3>
+                        <p className="text-stone-600">Buy credits when you need them</p>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center p-4 bg-stone-50 rounded-lg">
+                          <div>
+                            <div className="font-semibold text-stone-900">100 Credits</div>
+                            <div className="text-sm text-stone-600">Perfect for casual use</div>
+                          </div>
+                          <div className="text-xl font-bold text-stone-900">$10</div>
+                        </div>
+                        
+                        <div className="flex justify-between items-center p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                          <div>
+                            <div className="font-semibold text-stone-900">250 Credits</div>
+                            <div className="text-sm text-emerald-600">20% savings</div>
+                          </div>
+                          <div className="text-xl font-bold text-emerald-600">$20</div>
+                        </div>
+                        
+                        <div className="flex justify-between items-center p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                          <div>
+                            <div className="font-semibold text-stone-900">500 Credits</div>
+                            <div className="text-sm text-emerald-600">30% savings</div>
+                          </div>
+                          <div className="text-xl font-bold text-emerald-600">$35</div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-6 text-center">
+                        <div className="text-sm text-stone-500">No expiration • Use anytime</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-center mt-12">
+                  <p className="text-stone-600 mb-4">All plans include access to our complete suite of AI models</p>
+                  <p className="text-sm text-stone-500">💳 Secure payments powered by Stripe • Cancel anytime</p>
+                </div>
+              </div>
+            </section>
+
             {/* Features Section */}
             <section id="features" className="py-16">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -527,8 +625,8 @@ export default function Home() {
             </section>
 
             {/* CTA Section */}
-            <section id="pricing" className="py-16">
-                              <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+            <section className="py-16">
+              <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
                 <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 mb-4">
                   Ready to Create?
                 </h2>

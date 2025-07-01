@@ -160,4 +160,4 @@ export async function createUserProfile(userId: string, email: string) {
   }
 }
 
-export { adminAuth, adminFirestore, adminStorage }; 
+export { adminAuth, adminFirestore, adminStorage, FieldValue }; 
