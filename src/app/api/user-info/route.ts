@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       const userData = newUserDoc.data();
       
       return NextResponse.json({
-        credits: userData?.credits || 10,
+        credits: userData?.credits || 50,
         email: decodedToken.email,
         isNew: true
       });

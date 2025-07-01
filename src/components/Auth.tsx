@@ -77,7 +77,7 @@ const Auth = () => {
         </h2>
         <p className="text-gray-600 dark:text-gray-300">
           {isSignUp 
-            ? 'Start your AI art journey today' 
+            ? 'Start with 50 free credits • No card required' 
             : 'Sign in to continue creating'
           }
         </p>

@@ -146,11 +146,11 @@ export async function createUserProfile(userId: string, email: string) {
     if (!userDoc.exists) {
       await userRef.set({
         email,
-        credits: 10, // Free credits for new users
+        credits: 50, // Free credits for new users
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp()
       });
-      console.log(`✅ Created user profile for ${email} with 10 free credits`);
+      console.log(`✅ Created user profile for ${email} with 50 free credits`);
     }
     
     return userDoc.exists ? userDoc.data() : await userRef.get().then(doc => doc.data());

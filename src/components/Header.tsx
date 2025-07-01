@@ -73,11 +73,6 @@ export default function Header({ credits, isAdmin, isLandingPage = false }: Head
                   </div>
                               )}
               
-              {/* Debug info */}
-              <div className="px-3 py-2 bg-red-100 border border-red-300 rounded text-xs">
-                Stripe: {process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? 'OK' : 'MISSING'}
-              </div>
-              
               {process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? (
                 <button
                   onClick={() => setShowPaymentModal(true)}
