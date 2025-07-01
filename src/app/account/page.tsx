@@ -117,12 +117,44 @@ export default function AccountPage() {
                 Purchase more credits or subscribe to our monthly plan for the best value.
               </p>
               
-              <button
-                onClick={() => setShowPaymentModal(true)}
-                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors"
-              >
-                Get More Credits
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowPaymentModal(true)}
+                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors"
+                >
+                  Get More Credits
+                </button>
+                
+                <button
+                  onClick={async () => {
+                    if (!user) return;
+                    try {
+                      const token = await user.getIdToken();
+                      const response = await fetch('/api/fix-subscription', {
+                        method: 'POST',
+                        headers: {
+                          'Authorization': `Bearer ${token}`
+                        }
+                      });
+                      
+                      if (response.ok) {
+                        const result = await response.json();
+                        alert(`Success! ${result.message}. Added ${result.creditsAdded} credits.`);
+                        // Refresh the page to show updated credits
+                        window.location.reload();
+                      } else {
+                        const error = await response.json();
+                        alert(`Error: ${error.error}`);
+                      }
+                    } catch (error) {
+                      alert('Failed to fix subscription. Please try again.');
+                    }
+                  }}
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors"
+                >
+                  🔧 Fix Subscription
+                </button>
+              </div>
             </div>
           </div>
 
