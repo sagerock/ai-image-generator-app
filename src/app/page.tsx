@@ -10,6 +10,7 @@ import Notification from '../components/Notification';
 const getModelInfo = (modelId: string) => {
   const models: Record<string, { name: string; cost: number; credits: number; description: string; supportedRatios: string[] }> = {
     'flux-schnell': { name: 'FLUX Schnell', cost: 0.003, credits: 1, description: 'Fast generation, great for testing ideas', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
+    'proteus-v03': { name: 'Proteus v0.3', cost: 0.018, credits: 1, description: 'Anime specialist, ultra-affordable, enhanced lighting & aesthetics', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
     'flux-dev': { name: 'FLUX Dev', cost: 0.025, credits: 1, description: 'High quality, excellent detail', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
     'ideogram-turbo': { name: 'Ideogram v2a Turbo', cost: 0.03, credits: 1, description: 'Fast & affordable, great text rendering + multiple styles', supportedRatios: ['1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3', '16:10', '10:16', '3:1', '1:3'] },
     'playground-v25': { name: 'Playground v2.5', cost: 0.13, credits: 1, description: 'State-of-the-art aesthetic quality, beats DALL-E 3 & Midjourney', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
@@ -226,6 +227,7 @@ export default function Home() {
                       >
                         <optgroup label="💨 Fast & Affordable">
                           <option value="flux-schnell">FLUX Schnell - (1 credit)</option>
+                          <option value="proteus-v03">Proteus v0.3 - (1 credit)</option>
                           <option value="ideogram-turbo">Ideogram v2a Turbo - (1 credit)</option>
                         </optgroup>
                         <optgroup label="🎨 High Quality">

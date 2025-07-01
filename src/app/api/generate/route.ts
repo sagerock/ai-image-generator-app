@@ -25,6 +25,12 @@ const getModelConfig = (modelId: string) => {
       provider: 'replicate',
       replicateModel: 'black-forest-labs/flux-schnell'
     },
+    'proteus-v03': { 
+      name: 'Proteus v0.3', 
+      credits: 1, 
+      provider: 'replicate', 
+      replicateModel: 'datacte/proteus-v0.3:b28b79d725c8548b173b6a19ff9bffd16b9b80df5b18b8dc5cb9e1ee471bfa48'
+    },
     'flux-dev': { 
       name: 'FLUX Dev', 
       credits: 1, 
@@ -186,6 +192,27 @@ export async function POST(request: NextRequest) {
         input.output_format = "webp";
         input.output_quality = 90;
         input.go_fast = true;
+      } else if (model === 'proteus-v03') {
+        // Proteus v0.3 uses width/height with optimized settings for anime/aesthetic
+        const getProteusDimensions = (ratio: string): { width: number; height: number } => {
+          switch (ratio) {
+            case '16:9': return { width: 1280, height: 720 };
+            case '4:3': return { width: 1024, height: 768 };
+            case '3:4': return { width: 768, height: 1024 };
+            case '9:16': return { width: 720, height: 1280 };
+            case '1:1':
+            default:
+              return { width: 1024, height: 1024 }; // Recommended resolution
+          }
+        };
+        const dimensions = getProteusDimensions(aspectRatio);
+        input.width = dimensions.width;
+        input.height = dimensions.height;
+        input.scheduler = "DPM++2MSDE"; // Recommended scheduler
+        input.guidance_scale = 7.5; // Recommended 7-8
+        input.num_inference_steps = 20; // 20 for faster, up to 60 for detail
+        input.negative_prompt = "worst quality, low quality"; // Default negative
+        input.apply_watermark = false; // Disable watermarking
       } else if (model === 'flux-dev') {
         // FLUX models use aspect_ratio
         input.aspect_ratio = aspectRatio;
