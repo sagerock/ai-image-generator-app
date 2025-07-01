@@ -19,10 +19,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Ensure experimental features are compatible
-  experimental: {
-    serverComponentsExternalPackages: ['firebase-admin'],
-  },
+  // External packages for server components
+  serverExternalPackages: ['firebase-admin'],
 };
 
 export default nextConfig;
