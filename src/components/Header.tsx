@@ -71,14 +71,25 @@ export default function Header({ credits, isAdmin, isLandingPage = false }: Head
                       💳 {credits} credits
                     </span>
                   </div>
-                )}
-                
+                              )}
+              
+              {/* Debug info */}
+              <div className="px-3 py-2 bg-red-100 border border-red-300 rounded text-xs">
+                Stripe: {process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? 'OK' : 'MISSING'}
+              </div>
+              
+              {process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? (
                 <button
                   onClick={() => setShowPaymentModal(true)}
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors"
                 >
                   Get Credits
                 </button>
+              ) : (
+                <div className="px-4 py-2 bg-gray-300 text-gray-600 rounded-xl font-medium">
+                  Credits Unavailable
+                </div>
+              )}
 
                 <nav className="flex items-center space-x-3">
                   <Link 

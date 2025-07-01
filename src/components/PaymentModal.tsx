@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useAuth } from './AuthProvider';
-import { getStripe } from '@/lib/stripe';
 import { CREDIT_PACKAGES, SUBSCRIPTION_PLAN } from '@/lib/stripe';
 
 interface PaymentModalProps {
@@ -17,6 +16,13 @@ export default function PaymentModal({ isOpen, onClose }: PaymentModalProps) {
 
   const handlePayment = async (type: 'subscription' | 'credits', packageId?: string) => {
     if (!user) return;
+
+    // Check if Stripe key is available
+    const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+    if (!stripeKey) {
+      alert('Payment system is not configured. Please contact support.');
+      return;
+    }
 
     setIsLoading(true);
     try {

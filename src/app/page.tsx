@@ -7,7 +7,6 @@ import Auth from '@/components/Auth';
 import Link from 'next/link';
 import Notification from '../components/Notification';
 import Header from '@/components/Header';
-import DebugStripe from '@/components/DebugStripe';
 
 const getModelInfo = (modelId: string) => {
   const models: Record<string, { name: string; cost: number; credits: number; description: string; supportedRatios: string[] }> = {
@@ -659,8 +658,6 @@ export default function Home() {
           </div>
         )}
       </div>
-      
-      <DebugStripe />
     </main>
   );
 }
