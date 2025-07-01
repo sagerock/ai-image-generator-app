@@ -19,6 +19,12 @@ const getModelConfig = (modelId: string) => {
     provider: 'openai' | 'replicate';
     replicateModel?: string;
   }> = {
+    'lcm': { 
+      name: 'LCM (Latent Consistency)', 
+      credits: 1, 
+      provider: 'replicate', 
+      replicateModel: 'fofr/latent-consistency-model:683d19dc312f7a9f0428b04429a9ccefd28dbf7785fef083ad5cf991b65f406f'
+    },
     'flux-schnell': { 
       name: 'FLUX Schnell', 
       credits: 1, 
@@ -186,7 +192,27 @@ export async function POST(request: NextRequest) {
       const input: any = { prompt };
       
       // Model-specific parameters
-      if (model === 'flux-schnell') {
+      if (model === 'lcm') {
+        // LCM (Latent Consistency Model) - ultra-fast with width/height
+        const getLCMDimensions = (ratio: string): { width: number; height: number } => {
+          switch (ratio) {
+            case '16:9': return { width: 1024, height: 576 };
+            case '4:3': return { width: 896, height: 672 };
+            case '3:4': return { width: 672, height: 896 };
+            case '9:16': return { width: 576, height: 1024 };
+            case '1:1':
+            default:
+              return { width: 768, height: 768 }; // Default recommended size
+          }
+        };
+        const dimensions = getLCMDimensions(aspectRatio);
+        input.width = dimensions.width;
+        input.height = dimensions.height;
+        input.num_inference_steps = 8; // Recommended 1-8 steps for LCM
+        input.guidance_scale = 8; // Default recommended
+        input.lcm_origin_steps = 50; // Default
+        input.disable_safety_checker = true; // For API use
+      } else if (model === 'flux-schnell') {
         // FLUX models use aspect_ratio
         input.aspect_ratio = aspectRatio;
         input.output_format = "webp";

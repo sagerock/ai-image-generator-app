@@ -9,6 +9,7 @@ import Notification from '../components/Notification';
 
 const getModelInfo = (modelId: string) => {
   const models: Record<string, { name: string; cost: number; credits: number; description: string; supportedRatios: string[] }> = {
+    'lcm': { name: 'LCM (Latent Consistency)', cost: 0.0014, credits: 1, description: 'Ultra-fast 0.6s generation, 714 runs per $1, lightning speed', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
     'flux-schnell': { name: 'FLUX Schnell', cost: 0.003, credits: 1, description: 'Fast generation, great for testing ideas', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
     'proteus-v03': { name: 'Proteus v0.3', cost: 0.018, credits: 1, description: 'Anime specialist, ultra-affordable, enhanced lighting & aesthetics', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
     'flux-dev': { name: 'FLUX Dev', cost: 0.025, credits: 1, description: 'High quality, excellent detail', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
@@ -225,6 +226,9 @@ export default function Home() {
                         value={model}
                         onChange={(e) => setModel(e.target.value)}
                       >
+                        <optgroup label="⚡ Lightning Fast & Ultra-Cheap">
+                          <option value="lcm">LCM (Latent Consistency) - (1 credit)</option>
+                        </optgroup>
                         <optgroup label="💨 Fast & Affordable">
                           <option value="flux-schnell">FLUX Schnell - (1 credit)</option>
                           <option value="proteus-v03">Proteus v0.3 - (1 credit)</option>
