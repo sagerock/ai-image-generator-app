@@ -13,6 +13,7 @@ interface GeneratedImage {
   createdAt: string;
   size: string;
   quality: string;
+  dimensions?: { width: number; height: number };
 }
 
 export default function Gallery() {
@@ -20,6 +21,8 @@ export default function Gallery() {
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [imagesLoading, setImagesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
+  const [imageDimensions, setImageDimensions] = useState<Record<string, { width: number; height: number }>>({});
 
   // Fetch user's images
   useEffect(() => {
@@ -97,6 +100,47 @@ export default function Gallery() {
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  // Load image dimensions
+  const loadImageDimensions = (imageUrl: string, imageId: string) => {
+    if (imageDimensions[imageId]) return; // Already loaded
+
+    const img = new Image();
+    img.onload = () => {
+      setImageDimensions(prev => ({
+        ...prev,
+        [imageId]: { width: img.naturalWidth, height: img.naturalHeight }
+      }));
+    };
+    img.src = imageUrl;
+  };
+
+  // Download image function
+  const downloadImage = async (imageUrl: string, prompt: string, model: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Create a clean filename
+      const cleanPrompt = prompt.slice(0, 30).replace(/[^a-zA-Z0-9]/g, '_');
+      link.download = `${model}_${cleanPrompt}.webp`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download image:', error);
+    }
+  };
+
+  // Close modal function
+  const closeModal = () => {
+    setSelectedImage(null);
   };
 
   return (
@@ -177,32 +221,77 @@ export default function Gallery() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {images.map((image) => (
-              <div 
-                key={image.id} 
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer transform hover:scale-105"
-              >
-                <div className="aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800">
-                  <img
-                    src={image.imageUrl}
-                    alt={image.prompt}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="p-4">
-                  <p className="text-gray-800 dark:text-gray-200 text-sm font-medium line-clamp-3 mb-3">
-                    "{image.prompt}"
-                  </p>
-                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                    <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg font-medium">
-                      {image.model.toUpperCase()}
-                    </span>
-                    <span>{formatDate(image.createdAt)}</span>
+            {images.map((image) => {
+              const dimensions = imageDimensions[image.id];
+              
+              return (
+                <div 
+                  key={image.id} 
+                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                >
+                  <div 
+                    className="aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 cursor-pointer relative"
+                    onClick={() => setSelectedImage(image)}
+                  >
+                    <img
+                      src={image.imageUrl}
+                      alt={image.prompt}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      loading="lazy"
+                      onLoad={() => loadImageDimensions(image.imageUrl, image.id)}
+                    />
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                      <div className="text-white opacity-0 group-hover:opacity-100 transition-all duration-300 text-sm font-medium">
+                        Click to view full size
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-gray-800 dark:text-gray-200 text-sm font-medium line-clamp-3 mb-3">
+                      "{image.prompt}"
+                    </p>
+                    <div className="space-y-2">
+                      {/* Model and Date */}
+                      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg font-medium">
+                          {image.model.toUpperCase()}
+                        </span>
+                        <span>{formatDate(image.createdAt)}</span>
+                      </div>
+                      
+                      {/* Dimensions and Download */}
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {dimensions ? (
+                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                              {dimensions.width} × {dimensions.height}
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse">
+                              Loading...
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downloadImage(image.imageUrl, image.prompt, image.model);
+                          }}
+                          className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                          title="Download image"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <span>Download</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -222,6 +311,68 @@ export default function Gallery() {
           </div>
         )}
       </div>
+
+      {/* Full-size Image Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={closeModal}
+        >
+          <div className="relative max-w-7xl max-h-full w-full h-full flex items-center justify-center">
+            {/* Close button */}
+            <button
+              onClick={closeModal}
+              className="absolute top-4 right-4 z-10 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-all duration-200 backdrop-blur-sm"
+              title="Close"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Download button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                downloadImage(selectedImage.imageUrl, selectedImage.prompt, selectedImage.model);
+              }}
+              className="absolute top-4 right-16 z-10 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-all duration-200 backdrop-blur-sm"
+              title="Download"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </button>
+
+            {/* Image */}
+            <div className="relative max-w-full max-h-full" onClick={(e) => e.stopPropagation()}>
+              <img
+                src={selectedImage.imageUrl}
+                alt={selectedImage.prompt}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              />
+              
+              {/* Image info overlay */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-6 rounded-b-lg">
+                <p className="text-lg font-medium mb-2">"{selectedImage.prompt}"</p>
+                <div className="flex items-center justify-between text-sm opacity-90">
+                  <div className="flex items-center space-x-4">
+                    <span className="px-3 py-1 bg-white/20 rounded-full">
+                      {selectedImage.model.toUpperCase()}
+                    </span>
+                    {imageDimensions[selectedImage.id] && (
+                      <span className="px-3 py-1 bg-white/20 rounded-full">
+                        {imageDimensions[selectedImage.id].width} × {imageDimensions[selectedImage.id].height}
+                      </span>
+                    )}
+                  </div>
+                  <span>{formatDate(selectedImage.createdAt)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 } 
