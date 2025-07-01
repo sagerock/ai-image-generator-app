@@ -65,6 +65,8 @@ export async function POST(request: NextRequest) {
 
         // If it's a subscription, set up the subscription record (but don't add credits here)
         if (type === 'subscription' && session.subscription) {
+          console.log(`📝 Creating subscription record for user ${userId}, subscription ${session.subscription}`);
+          
           await adminFirestore.collection('subscriptions').add({
             userId,
             stripeSubscriptionId: session.subscription,
@@ -76,8 +78,10 @@ export async function POST(request: NextRequest) {
           });
           
           console.log(`✅ Subscription created for user ${userId} - credits will be added via invoice`);
+        } else if (type !== 'subscription') {
+          console.log(`✅ One-time payment processed successfully for user ${userId}`);
         } else {
-          console.log(`✅ Payment processed successfully for user ${userId}`);
+          console.log(`⚠️ Subscription checkout completed but no subscription ID found`);
         }
         break;
       }
@@ -107,6 +111,8 @@ export async function POST(request: NextRequest) {
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as any; // Type assertion for subscription property
         
+        console.log(`📧 Invoice payment succeeded for subscription: ${invoice.subscription}`);
+        
         // Handle recurring subscription payments
         if (invoice.subscription) {
           const subscriptionsRef = adminFirestore.collection('subscriptions');
@@ -118,6 +124,8 @@ export async function POST(request: NextRequest) {
             const subscriptionDoc = snapshot.docs[0];
             const subscriptionData = subscriptionDoc.data();
             const userId = subscriptionData.userId;
+
+            console.log(`👤 Adding credits for user: ${userId}`);
 
             // Add monthly credits
             const userRef = adminFirestore.collection('users').doc(userId);
@@ -138,7 +146,54 @@ export async function POST(request: NextRequest) {
               createdAt: FieldValue.serverTimestamp()
             });
 
-            console.log(`🔄 Monthly credits added for subscription ${invoice.subscription}`);
+            console.log(`✅ Monthly credits added for subscription ${invoice.subscription}`);
+          } else {
+            console.error(`❌ No subscription record found for ${invoice.subscription}`);
+            
+            // Try to get customer info from Stripe and create subscription record
+            try {
+              const stripe = getServerStripe();
+              const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
+              console.log(`🔍 Retrieved subscription from Stripe:`, subscription.id);
+              
+              // Look for user by customer ID in transactions
+              const transactionsSnapshot = await adminFirestore
+                .collection('transactions')
+                .where('stripeCustomerId', '==', subscription.customer)
+                .limit(1)
+                .get();
+              
+              if (!transactionsSnapshot.empty) {
+                const transaction = transactionsSnapshot.docs[0].data();
+                const userId = transaction.userId;
+                
+                console.log(`🔄 Creating missing subscription record for user: ${userId}`);
+                
+                // Create the missing subscription record
+                await adminFirestore.collection('subscriptions').add({
+                  userId,
+                  stripeSubscriptionId: subscription.id,
+                  stripeCustomerId: subscription.customer,
+                  status: subscription.status,
+                  currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+                  currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+                  createdAt: FieldValue.serverTimestamp()
+                });
+                
+                // Add the credits
+                const userRef = adminFirestore.collection('users').doc(userId);
+                await userRef.update({
+                  credits: FieldValue.increment(400),
+                  updatedAt: FieldValue.serverTimestamp()
+                });
+                
+                console.log(`✅ Fixed missing subscription and added credits for ${userId}`);
+              } else {
+                console.error(`❌ Could not find user for customer ${subscription.customer}`);
+              }
+            } catch (error) {
+              console.error(`❌ Error retrieving subscription:`, error);
+            }
           }
         }
         break;
