@@ -14,23 +14,42 @@ export async function POST(request: NextRequest) {
     const decodedToken = await adminAuth.verifyIdToken(token);
     const userId = decodedToken.uid;
 
-    // Find user's Stripe customer ID from subscriptions
+    // Find user's Stripe customer ID from subscriptions first
+    let customerId = null;
+    
     const subscriptionsSnapshot = await adminFirestore
       .collection('subscriptions')
       .where('userId', '==', userId)
-      .where('status', '==', 'active')
+      .orderBy('createdAt', 'desc')
       .limit(1)
       .get();
 
-    if (subscriptionsSnapshot.empty) {
-      return NextResponse.json({ error: 'No active subscription found' }, { status: 404 });
+    if (!subscriptionsSnapshot.empty) {
+      const subscription = subscriptionsSnapshot.docs[0].data();
+      customerId = subscription.stripeCustomerId;
     }
 
-    const subscription = subscriptionsSnapshot.docs[0].data();
-    const customerId = subscription.stripeCustomerId;
+    // If no subscription, try to find customer ID from transactions
+    if (!customerId) {
+      const transactionsSnapshot = await adminFirestore
+        .collection('transactions')
+        .where('userId', '==', userId)
+        .where('stripeCustomerId', '!=', null)
+        .orderBy('createdAt', 'desc')
+        .limit(1)
+        .get();
+
+      if (!transactionsSnapshot.empty) {
+        const transaction = transactionsSnapshot.docs[0].data();
+        customerId = transaction.stripeCustomerId;
+      }
+    }
 
     if (!customerId) {
-      return NextResponse.json({ error: 'Customer ID not found' }, { status: 404 });
+      console.log(`No customer ID found for user ${userId}`);
+      return NextResponse.json({ 
+        error: 'No payment history found. Please make a purchase first to access customer portal.' 
+      }, { status: 404 });
     }
 
     const stripe = getServerStripe();

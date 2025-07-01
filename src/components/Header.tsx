@@ -71,7 +71,14 @@ export default function Header({ credits, isAdmin, isLandingPage = false }: Head
                       💳 {credits} credits
                     </span>
                   </div>
-                              )}
+                )}
+                
+                <Link 
+                  href="/account"
+                  className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl font-medium transition-colors"
+                >
+                  Account
+                </Link>
               
               {process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? (
                 <button

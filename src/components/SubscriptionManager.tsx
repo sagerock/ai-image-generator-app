@@ -61,9 +61,10 @@ export default function SubscriptionManager() {
       } else {
         const error = await response.json();
         if (response.status === 404) {
-          alert('No active subscription found. Subscribe first to manage your plan!');
+          alert(error.error || 'No active subscription found. Subscribe first to manage your plan!');
         } else {
-          alert('Error opening customer portal. Please try again.');
+          console.error('Portal error:', error);
+          alert(`Error: ${error.error || 'Unable to open customer portal. Please try again.'}`);
         }
       }
     } catch (error) {
