@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (customers.data.length === 0) {
+      console.log('❌ No Stripe customer found for this email');
       return NextResponse.json({ 
         error: 'No Stripe customer found for this email',
         email: userEmail 
@@ -38,23 +39,27 @@ export async function POST(request: NextRequest) {
     // Get active subscriptions for this customer
     const subscriptions = await stripe.subscriptions.list({
       customer: customer.id,
-      status: 'active'
+      status: 'all' // get all statuses for debugging
     });
+    console.log(`🔍 Stripe subscriptions found:`, subscriptions.data.map(s => ({id: s.id, status: s.status})));
 
     if (subscriptions.data.length === 0) {
+      console.log('❌ No subscriptions found for this customer');
       return NextResponse.json({ 
-        error: 'No active subscriptions found for this customer' 
+        error: 'No subscriptions found for this customer' 
       }, { status: 404 });
     }
 
-    const subscription = subscriptions.data[0];
-    console.log(`🎫 Found active subscription: ${subscription.id}`);
+    // Prefer active, then trialing, then canceled
+    const subscription = subscriptions.data.find(s => s.status === 'active') || subscriptions.data[0];
+    console.log(`🎫 Using subscription: ${subscription.id} (status: ${subscription.status})`);
 
     // Check if subscription record exists in our database
     const subscriptionsSnapshot = await adminFirestore
       .collection('subscriptions')
       .where('stripeSubscriptionId', '==', subscription.id)
       .get();
+    console.log(`📦 Firestore subscription records found: ${subscriptionsSnapshot.size}`);
 
     if (subscriptionsSnapshot.empty) {
       console.log(`📝 Creating missing subscription record`);

@@ -18,8 +18,14 @@ export async function GET(request: NextRequest) {
       .collection('subscriptions')
       .where('userId', '==', userId)
       .orderBy('createdAt', 'desc')
-      .limit(1)
+      .limit(5)
       .get();
+
+    console.log(`🔍 Found ${subscriptionsSnapshot.size} subscription records for user ${userId}`);
+    subscriptionsSnapshot.forEach(doc => {
+      const d = doc.data();
+      console.log(`  - ${d.stripeSubscriptionId} | status: ${d.status} | periodEnd: ${d.currentPeriodEnd}`);
+    });
 
     if (subscriptionsSnapshot.empty) {
       return NextResponse.json({ 

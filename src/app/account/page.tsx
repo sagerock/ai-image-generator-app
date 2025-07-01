@@ -15,6 +15,7 @@ export default function AccountPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -56,6 +57,26 @@ export default function AccountPage() {
     };
 
     fetchUserInfo();
+  }, [user]);
+
+  // Fetch subscription status
+  useEffect(() => {
+    const fetchStatus = async () => {
+      if (!user) return;
+      try {
+        const token = await user.getIdToken();
+        const response = await fetch('/api/subscription-status', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setSubscriptionStatus(data.status);
+        }
+      } catch {}
+    };
+    fetchStatus();
   }, [user]);
 
   if (authLoading || loading) {
@@ -140,7 +161,6 @@ export default function AccountPage() {
                       if (response.ok) {
                         const result = await response.json();
                         alert(`Success! ${result.message}. Added ${result.creditsAdded} credits.`);
-                        // Refresh the page to show updated credits
                         window.location.reload();
                       } else {
                         const error = await response.json();
@@ -151,6 +171,7 @@ export default function AccountPage() {
                     }
                   }}
                   className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors"
+                  disabled={subscriptionStatus === 'active'}
                 >
                   🔧 Fix Subscription
                 </button>
