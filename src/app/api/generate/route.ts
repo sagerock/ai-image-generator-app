@@ -25,6 +25,12 @@ const getModelConfig = (modelId: string) => {
       provider: 'replicate', 
       replicateModel: 'fofr/latent-consistency-model:683d19dc312f7a9f0428b04429a9ccefd28dbf7785fef083ad5cf991b65f406f'
     },
+    'realistic-vision': { 
+      name: 'Realistic Vision v5.1', 
+      credits: 1, 
+      provider: 'replicate', 
+      replicateModel: 'lucataco/realistic-vision-v5.1:2c8e954decbf70b7607a4414e5785ef9e4de4b8c51d50fb8b8b349160e0ef6bb'
+    },
     'flux-schnell': { 
       name: 'FLUX Schnell', 
       credits: 1, 
@@ -212,6 +218,26 @@ export async function POST(request: NextRequest) {
         input.guidance_scale = 8; // Default recommended
         input.lcm_origin_steps = 50; // Default
         input.disable_safety_checker = true; // For API use
+      } else if (model === 'realistic-vision') {
+        // Realistic Vision v5.1 - photorealistic specialist with width/height
+        const getRealisticVisionDimensions = (ratio: string): { width: number; height: number } => {
+          switch (ratio) {
+            case '16:9': return { width: 1024, height: 576 };
+            case '4:3': return { width: 832, height: 624 };
+            case '3:4': return { width: 624, height: 832 };
+            case '9:16': return { width: 576, height: 1024 };
+            case '1:1':
+            default:
+              return { width: 512, height: 512 }; // Default size for photorealistic
+          }
+        };
+        const dimensions = getRealisticVisionDimensions(aspectRatio);
+        input.width = dimensions.width;
+        input.height = dimensions.height;
+        input.steps = 20; // Default inference steps
+        input.guidance = 5; // Recommended 3.5-7 range
+        input.scheduler = "EulerA"; // Default recommended scheduler
+        input.negative_prompt = "(deformed iris, deformed pupils, semi-realistic, cgi, 3d, render, sketch, cartoon, drawing, anime:1.4), text, close up, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck";
       } else if (model === 'flux-schnell') {
         // FLUX models use aspect_ratio
         input.aspect_ratio = aspectRatio;
