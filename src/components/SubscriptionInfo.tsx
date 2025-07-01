@@ -158,10 +158,28 @@ export default function SubscriptionInfo() {
               </div>
               <button
                 onClick={() => window.open('https://billing.stripe.com/p/login/00wfZa1cG6sP0QxfU7bMQ00', '_blank', 'noopener,noreferrer')}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm mr-2"
               >
                 Manage
               </button>
+              {subscriptionData.status === 'active' && (
+                <button
+                  onClick={async () => {
+                    if (!confirm('Cancel subscription at period end?')) return;
+                    try {
+                      const token = await user?.getIdToken();
+                      if (!token) { alert('Not authenticated'); return; }
+                      const res = await fetch('/api/cancel-subscription', { method:'POST', headers:{ 'Authorization':`Bearer ${token}` } });
+                      const data = await res.json();
+                      if(res.ok){ alert('Subscription will cancel at period end'); location.reload(); }
+                      else { alert(data.error); }
+                    }catch(e){ alert('Error cancelling'); }
+                  }}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors text-sm"
+                >
+                  Cancel
+                </button>
+              )}
             </div>
           </div>
         )}
