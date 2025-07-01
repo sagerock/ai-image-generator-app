@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { auth } from '@/lib/firebase';
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 interface GeneratedImage {
   id: string;
@@ -148,34 +149,19 @@ export default function Gallery() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <Header />
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-12">
-          <div className="text-center sm:text-left mb-4 sm:mb-0">
-            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Your Gallery
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-2">
-              {imagesLoading 
-                ? 'Loading your AI-generated masterpieces...' 
-                : `${images.length} AI-generated masterpiece${images.length !== 1 ? 's' : ''}`
-              }
-            </p>
-          </div>
-          <div className="flex space-x-3">
-            <Link
-              href="/"
-              className="px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md"
-            >
-              ← Create New
-            </Link>
-            <button
-              onClick={() => auth.signOut()}
-              className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
-            >
-              Sign Out
-            </button>
-          </div>
+        {/* Gallery Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+            Your Gallery
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">
+            {imagesLoading 
+              ? 'Loading your AI-generated masterpieces...' 
+              : `${images.length} AI-generated masterpiece${images.length !== 1 ? 's' : ''}`
+            }
+          </p>
         </div>
 
         {/* Gallery Content */}

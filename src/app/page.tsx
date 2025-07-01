@@ -6,6 +6,7 @@ import { auth } from '@/lib/firebase';
 import Auth from '@/components/Auth';
 import Link from 'next/link';
 import Notification from '../components/Notification';
+import Header from '@/components/Header';
 
 const getModelInfo = (modelId: string) => {
   const models: Record<string, { name: string; cost: number; credits: number; description: string; supportedRatios: string[] }> = {
@@ -149,7 +150,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-900 text-white">
+    <main className="min-h-screen bg-white text-gray-900">
       {notification && (
         <Notification
           message={notification.message}
@@ -158,42 +159,10 @@ export default function Home() {
           onClose={() => setShowNotification(false)}
         />
       )}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 pt-8 pb-8">
         {user ? (
           <div>
-            <header className="flex flex-col sm:flex-row justify-between items-center mb-12 pb-6 border-b border-gray-700">
-              <div className="text-center sm:text-left mb-4 sm:mb-0">
-                <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                  Image Creator
-                </h1>
-                <p className="text-gray-400 mt-2">
-                  Powered by DALL-E 3 & Replicate
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <div className="px-4 py-2 bg-gray-800 rounded-xl border border-gray-700">
-                  <span className="text-sm font-semibold text-green-400">
-                    💳 {credits !== null ? `${credits} credits` : '...'}
-                  </span>
-                </div>
-
-                <div className="flex space-x-3">
-                  <Link href="/gallery" className="px-6 py-3 bg-gray-800 text-gray-200 font-semibold rounded-xl border border-gray-700 hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-lg">
-                    Gallery
-                  </Link>
-                  
-                  {isAdmin && (
-                    <Link href="/admin" className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-lg">
-                      Admin
-                    </Link>
-                  )}
-                  
-                  <button onClick={() => auth.signOut()} className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-lg">
-                    Sign Out
-                  </button>
-                </div>
-              </div>
-            </header>
+            <Header credits={credits} isAdmin={isAdmin} />
             
             <div className="max-w-4xl mx-auto">
               <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 mb-8 border border-gray-700">
@@ -325,33 +294,34 @@ export default function Home() {
           </div>
         ) : (
           <div>
+            <Header isLandingPage={true} />
             {/* Hero Section */}
-            <section className="relative overflow-hidden">
+            <section className="relative overflow-hidden pt-20">
               {/* Background gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-pink-900/20"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-amber-50"></div>
               
               <div className="relative max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
                 <div className="text-center">
-                  <h1 className="text-5xl sm:text-7xl font-bold bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent mb-6">
-                    Image Creator
+                  <h1 className="text-5xl sm:text-7xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-amber-600 bg-clip-text text-transparent mb-6">
+                    Optic Engine
                   </h1>
-                  <p className="text-xl sm:text-2xl text-gray-300 mb-4 max-w-3xl mx-auto">
-                    The world&apos;s most comprehensive AI image generation platform
+                  <p className="text-xl sm:text-2xl text-stone-600 mb-4 max-w-3xl mx-auto">
+                    The world&apos;s most comprehensive AI image creation platform
                   </p>
-                  <p className="text-lg text-gray-400 mb-8 max-w-4xl mx-auto">
-                    Generate stunning images in seconds with 12 cutting-edge AI models. From ultra-fast 0.6s generation 
-                    to premium photorealistic quality - all at unbeatable prices starting at just 0.14¢ per image.
+                  <p className="text-lg text-stone-500 mb-8 max-w-4xl mx-auto">
+                    Create stunning images in seconds with 12 cutting-edge AI models. From ultra-fast 0.6s creation 
+                    to premium photorealistic quality - all at unbeatable prices starting at just 2.5¢ per image.
                   </p>
                   
                   <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-                    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl px-6 py-3">
-                      <span className="text-green-400 font-semibold">⚡ 0.6s generation</span>
+                    <div className="bg-emerald-50 backdrop-blur-sm border border-emerald-200 rounded-xl px-6 py-3">
+                      <span className="text-emerald-700 font-semibold">⚡ 0.6s creation</span>
                     </div>
-                    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl px-6 py-3">
-                      <span className="text-blue-400 font-semibold">💰 40 runs per $1</span>
+                    <div className="bg-amber-50 backdrop-blur-sm border border-amber-200 rounded-xl px-6 py-3">
+                      <span className="text-amber-700 font-semibold">💰 40 runs per $1</span>
                     </div>
-                    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl px-6 py-3">
-                      <span className="text-purple-400 font-semibold">🎨 12 AI models</span>
+                    <div className="bg-rose-50 backdrop-blur-sm border border-rose-200 rounded-xl px-6 py-3">
+                      <span className="text-rose-700 font-semibold">🎨 12 AI models</span>
                     </div>
                   </div>
                 </div>
@@ -359,14 +329,14 @@ export default function Home() {
             </section>
 
             {/* Model Showcase */}
-            <section className="py-16 bg-gray-800/30">
+            <section id="models" className="py-16 bg-stone-50">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
-                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+                  <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 mb-4">
                     12 Cutting-Edge AI Models
                   </h2>
-                  <p className="text-lg text-gray-400 max-w-3xl mx-auto">
-                    From lightning-fast generation to premium quality, we've got the perfect model for every need and budget.
+                  <p className="text-lg text-stone-600 max-w-3xl mx-auto">
+                    From lightning-fast creation to premium quality, we've got the perfect model for every need and budget.
                   </p>
                 </div>
 
@@ -459,11 +429,11 @@ export default function Home() {
             </section>
 
             {/* Features Section */}
-            <section className="py-16">
+            <section id="features" className="py-16">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
                   <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                    Why Choose Image Creator?
+                    Why Choose Optic Engine?
                   </h2>
                 </div>
 
@@ -473,7 +443,7 @@ export default function Home() {
                       <span className="text-2xl">⚡</span>
                     </div>
                     <h3 className="text-xl font-semibold text-white mb-2">Blazing Fast</h3>
-                    <p className="text-gray-400">Generate images in as little as 0.6 seconds with our Latent Consistency Model.</p>
+                    <p className="text-gray-400">Create images in as little as 0.6 seconds with our Latent Consistency Model.</p>
                   </div>
 
                   <div className="text-center">
@@ -481,7 +451,7 @@ export default function Home() {
                       <span className="text-2xl">💰</span>
                     </div>
                     <h3 className="text-xl font-semibold text-white mb-2">Unbeatable Prices</h3>
-                    <p className="text-gray-400">Starting at just 2.5¢ per image - get 40 generations for $1 with our ultra-fast models.</p>
+                    <p className="text-gray-400">Starting at just 2.5¢ per image - get 40 images for $1 with our ultra-fast models.</p>
                   </div>
 
                   <div className="text-center">
@@ -557,32 +527,32 @@ export default function Home() {
             </section>
 
             {/* CTA Section */}
-            <section className="py-16">
-              <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-                <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+            <section id="pricing" className="py-16">
+                              <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+                <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 mb-4">
                   Ready to Create?
                 </h2>
-                <p className="text-lg text-gray-400 mb-8">
-                  Join thousands of creators already using Image Creator to bring their visions to life. 
+                <p className="text-lg text-stone-600 mb-8">
+                  Join thousands of creators already using Optic Engine to bring their visions to life. 
                   Sign up now and get started with our ultra-affordable models!
                 </p>
                 
-                <div className="mb-8">
+                <div id="auth" className="mb-8">
                   <Auth />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                   <div>
-                    <div className="text-2xl font-bold text-blue-400">0.6s</div>
-                    <div className="text-sm text-gray-400">Fastest Generation</div>
+                    <div className="text-2xl font-bold text-emerald-600">0.6s</div>
+                    <div className="text-sm text-stone-500">Fastest Creation</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-green-400">40/$1</div>
-                    <div className="text-sm text-gray-400">Best Value</div>
+                    <div className="text-2xl font-bold text-amber-600">40/$1</div>
+                    <div className="text-sm text-stone-500">Best Value</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-purple-400">12</div>
-                    <div className="text-sm text-gray-400">AI Models</div>
+                    <div className="text-2xl font-bold text-rose-600">12</div>
+                    <div className="text-sm text-stone-500">AI Models</div>
                   </div>
                 </div>
               </div>
