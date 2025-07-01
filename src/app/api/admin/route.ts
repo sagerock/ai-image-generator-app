@@ -24,7 +24,7 @@ async function verifyAdmin(request: NextRequest) {
     }
     
     return decodedToken;
-  } catch (error) {
+  } catch {
     return null;
   }
 }

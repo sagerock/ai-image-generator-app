@@ -336,7 +336,7 @@ export default function Home() {
                     Image Creator
                   </h1>
                   <p className="text-xl sm:text-2xl text-gray-300 mb-4 max-w-3xl mx-auto">
-                    The world's most comprehensive AI image generation platform
+                    The world&apos;s most comprehensive AI image generation platform
                   </p>
                   <p className="text-lg text-gray-400 mb-8 max-w-4xl mx-auto">
                     Generate stunning images in seconds with 12 cutting-edge AI models. From ultra-fast 0.6s generation 

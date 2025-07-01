@@ -357,7 +357,7 @@ export default function Gallery() {
               
               {/* Image info overlay */}
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-6 rounded-b-lg">
-                <p className="text-lg font-medium mb-2">"{selectedImage.prompt}"</p>
+                                            <p className="text-lg font-medium mb-2">&quot;{selectedImage.prompt}&quot;</p>
                 <div className="flex items-center justify-between text-sm opacity-90">
                   <div className="flex items-center space-x-4">
                     <span className="px-3 py-1 bg-white/20 rounded-full">

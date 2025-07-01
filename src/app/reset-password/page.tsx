@@ -15,7 +15,7 @@ export default function ResetPasswordPage() {
   const [validCode, setValidCode] = useState<boolean | null>(null);
   const [email, setEmail] = useState<string>('');
   
-  const router = useRouter();
+  // const router = useRouter();
   const searchParams = useSearchParams();
   const oobCode = searchParams?.get('oobCode');
   const mode = searchParams?.get('mode');
