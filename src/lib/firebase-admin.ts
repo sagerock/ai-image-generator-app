@@ -1,16 +1,16 @@
 import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
-import { getAuth as getAdminAuth, Auth } from 'firebase-admin/auth';
-import { getFirestore as getAdminFirestore, Firestore, FieldValue } from 'firebase-admin/firestore';
-import { getStorage as getAdminStorage, Storage } from 'firebase-admin/storage';
+import { getAuth, Auth } from 'firebase-admin/auth';
+import { getFirestore, Firestore, FieldValue } from 'firebase-admin/firestore';
+import { getStorage, Storage } from 'firebase-admin/storage';
 import { getModelCredits } from '@/lib/models';
 
 // Lazy initialization - only initialize when actually needed at runtime
 let _app: App | null = null;
-let _adminAuth: Auth | null = null;
-let _adminFirestore: Firestore | null = null;
-let _adminStorage: Storage | null = null;
+let _auth: Auth | null = null;
+let _firestore: Firestore | null = null;
+let _storage: Storage | null = null;
 
-function getApp(): App {
+function initializeFirebaseAdmin(): App {
   if (_app) return _app;
 
   // Check if already initialized
@@ -52,46 +52,44 @@ function getApp(): App {
 }
 
 // Lazy getters for Firebase services
-export const adminAuth = {
-  get instance(): Auth {
-    if (!_adminAuth) {
-      _adminAuth = getAdminAuth(getApp());
-    }
-    return _adminAuth;
-  },
-  verifyIdToken(token: string) {
-    return this.instance.verifyIdToken(token);
+function getAdminAuth(): Auth {
+  if (!_auth) {
+    _auth = getAuth(initializeFirebaseAdmin());
   }
+  return _auth;
+}
+
+function getAdminFirestore(): Firestore {
+  if (!_firestore) {
+    _firestore = getFirestore(initializeFirebaseAdmin());
+  }
+  return _firestore;
+}
+
+function getAdminStorage(): Storage {
+  if (!_storage) {
+    _storage = getStorage(initializeFirebaseAdmin());
+  }
+  return _storage;
+}
+
+// Export objects that lazily access the Firebase services
+export const adminAuth = {
+  verifyIdToken: (token: string) => getAdminAuth().verifyIdToken(token),
 };
 
 export const adminFirestore = {
-  get instance(): Firestore {
-    if (!_adminFirestore) {
-      _adminFirestore = getAdminFirestore(getApp());
-    }
-    return _adminFirestore;
-  },
-  collection(path: string) {
-    return this.instance.collection(path);
-  }
+  collection: (path: string) => getAdminFirestore().collection(path),
 };
 
 export const adminStorage = {
-  get instance(): Storage {
-    if (!_adminStorage) {
-      _adminStorage = getAdminStorage(getApp());
-    }
-    return _adminStorage;
-  },
-  bucket() {
-    return this.instance.bucket();
-  }
+  bucket: () => getAdminStorage().bucket(),
 };
 
 // Admin helper functions
 export async function getAllUsers() {
   try {
-    const usersRef = adminFirestore.collection('users');
+    const usersRef = getAdminFirestore().collection('users');
     const snapshot = await usersRef.get();
 
     const users = snapshot.docs.map(doc => {
@@ -114,13 +112,13 @@ export async function getAllUsers() {
 
 export async function getUserStats(userId: string) {
   try {
+    const db = getAdminFirestore();
     // Get user info
-    const userDoc = await adminFirestore.collection('users').doc(userId).get();
+    const userDoc = await db.collection('users').doc(userId).get();
     const userData = userDoc.exists ? userDoc.data() : null;
 
     // Get images and calculate actual credits used
-    const imagesRef = adminFirestore.collection('generated-images');
-    const imagesSnapshot = await imagesRef.where('userId', '==', userId).get();
+    const imagesSnapshot = await db.collection('generated-images').where('userId', '==', userId).get();
     const imageCount = imagesSnapshot.size;
 
     // Calculate actual credits used based on models used
@@ -145,7 +143,7 @@ export async function getUserStats(userId: string) {
 
 export async function updateUserCredits(userId: string, newCredits: number) {
   try {
-    await adminFirestore.collection('users').doc(userId).update({
+    await getAdminFirestore().collection('users').doc(userId).update({
       credits: newCredits,
       updatedAt: FieldValue.serverTimestamp()
     });
@@ -158,7 +156,7 @@ export async function updateUserCredits(userId: string, newCredits: number) {
 
 export async function createUserProfile(userId: string, email: string) {
   try {
-    const userRef = adminFirestore.collection('users').doc(userId);
+    const userRef = getAdminFirestore().collection('users').doc(userId);
     const userDoc = await userRef.get();
 
     if (!userDoc.exists) {
