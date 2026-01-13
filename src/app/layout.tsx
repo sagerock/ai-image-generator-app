@@ -6,8 +6,8 @@ import { AuthProvider } from "@/components/AuthProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Optic Engine - AI Image Creation Platform",
-  description: "Generate stunning AI images in 0.6 seconds with 12 cutting-edge models. From ultra-fast to premium quality - the most comprehensive AI image creation platform.",
+  title: "SageRock AI Image Builder",
+  description: "Generate stunning AI images with multiple cutting-edge models. Fast, affordable, and easy to use.",
 };
 
 export default function RootLayout({

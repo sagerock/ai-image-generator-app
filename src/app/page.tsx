@@ -263,7 +263,7 @@ export default function Home() {
           <section className="pt-24 pb-16 px-4">
             <div className="max-w-3xl mx-auto text-center">
               <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 mb-4">
-                AI Image Generation
+                SageRock AI Image Builder
               </h1>
               <p className="text-lg text-stone-600 mb-8">
                 Create stunning images with {getActiveModels().length} AI models. Fast, affordable, and easy to use.
@@ -335,7 +335,7 @@ export default function Home() {
           <section id="features" className="py-16">
             <div className="max-w-5xl mx-auto px-4">
               <h2 className="text-2xl font-bold text-stone-900 mb-8 text-center">
-                Why Optic Engine
+                Why SageRock AI
               </h2>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">

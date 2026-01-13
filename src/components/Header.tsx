@@ -12,9 +12,11 @@ interface HeaderProps {
 
 function Logo() {
   return (
-    <span className="text-xl font-bold tracking-tight text-stone-900">
-      Optic Engine
-    </span>
+    <img
+      src="https://sagerock.com/wp-content/uploads/2024/05/sagerocklogo2024-300x70.png"
+      alt="SageRock"
+      className="h-8 w-auto"
+    />
   );
 }
 
