@@ -34,8 +34,21 @@ function initializeFirebaseAdmin(): App {
     throw new Error('Firebase Admin SDK environment variables are not set.');
   }
 
-  // Parse the private key properly (it might have escaped newlines)
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY!.replace(/\\n/g, '\n');
+  // Parse the private key properly
+  // Handle different formats: escaped \\n, literal \n in quotes, or actual newlines
+  let privateKey = process.env.FIREBASE_PRIVATE_KEY!;
+
+  // If key contains literal backslash-n, replace with actual newlines
+  if (privateKey.includes('\\n')) {
+    privateKey = privateKey.replace(/\\n/g, '\n');
+  }
+
+  // Remove surrounding quotes if present (Railway might add them)
+  if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+    privateKey = privateKey.slice(1, -1);
+    // After removing quotes, check for escaped newlines again
+    privateKey = privateKey.replace(/\\n/g, '\n');
+  }
 
   console.log("🔧 Initializing Firebase Admin App...");
   _app = initializeApp({
