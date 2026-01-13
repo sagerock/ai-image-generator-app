@@ -34,19 +34,15 @@ export class GoogleProvider implements ImageProvider {
       }]
     };
 
-    // Add image configuration for aspect ratio
-    if (aspectRatio && aspectRatio !== '1:1') {
-      requestBody.generationConfig = {
-        imageConfig: {
-          aspectRatio: aspectRatio
-        }
-      };
-    }
+    // Always add image configuration for aspect ratio (don't assume 1:1 is default)
+    requestBody.generationConfig = {
+      imageConfig: {
+        aspectRatio: aspectRatio || '1:1'
+      }
+    };
 
     // Add image size for Gemini 3 Pro (supports 1K, 2K, 4K)
     if (model.defaultParams?.imageSize) {
-      requestBody.generationConfig = requestBody.generationConfig || {};
-      requestBody.generationConfig.imageConfig = requestBody.generationConfig.imageConfig || {};
       requestBody.generationConfig.imageConfig.imageSize = model.defaultParams.imageSize;
     }
 
