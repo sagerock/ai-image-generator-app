@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminFirestore, adminStorage, createUserProfile } from '@/lib/firebase-admin';
+import { adminAuth, adminFirestore, adminStorage, createUserProfile, FieldValue } from '@/lib/firebase-admin';
 import { getModel } from '@/lib/models';
 import { getProvider } from '@/lib/providers';
 import { AspectRatio } from '@/lib/models/types';
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
       model: modelId,
       imageUrl: publicUrl,
       fileName: fileName,
-      createdAt: new Date(),
+      createdAt: FieldValue.serverTimestamp(),
       aspectRatio: aspectRatio,
     };
 
