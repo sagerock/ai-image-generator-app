@@ -165,35 +165,32 @@ export default function Home() {
                     <optgroup label="Fast (1 credit)">
                       {getModelsByTier('fast').map(m => (
                         <option key={m.id} value={m.id}>
-                          {m.name}{m.isNew && ' (New)'}
+                          {m.name} — {m.description}
                         </option>
                       ))}
                     </optgroup>
                     <optgroup label="Standard (2 credits)">
                       {getModelsByTier('standard').map(m => (
                         <option key={m.id} value={m.id}>
-                          {m.name}{m.isNew && ' (New)'}
+                          {m.name} — {m.description}
                         </option>
                       ))}
                     </optgroup>
                     <optgroup label="Premium (3 credits)">
                       {getModelsByTier('premium').map(m => (
                         <option key={m.id} value={m.id}>
-                          {m.name}{m.isNew && ' (New)'}
+                          {m.name} — {m.description}
                         </option>
                       ))}
                     </optgroup>
                     <optgroup label="Ultra (4 credits)">
                       {getModelsByTier('ultra').map(m => (
                         <option key={m.id} value={m.id}>
-                          {m.name}{m.isNew && ' (New)'}
+                          {m.name} — {m.description}
                         </option>
                       ))}
                     </optgroup>
                   </select>
-                  <p className="text-sm text-stone-500 mt-1">
-                    {getModelInfo(model).description}
-                  </p>
                 </div>
 
                 <div>
