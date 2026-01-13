@@ -213,25 +213,36 @@ src/
 
 ## 🚀 Deployment
 
-### Deploy to Vercel (Recommended)
+### Deploy to Railway (Recommended)
 
 1. **Push your code to GitHub**
 
-2. **Connect to Vercel:**
-   - Go to [Vercel](https://vercel.com)
-   - Import your GitHub repository
-   - Configure environment variables in Vercel dashboard
+2. **Connect to Railway:**
+   - Go to [Railway](https://railway.app)
+   - Click "New Project" → "Deploy from GitHub repo"
+   - Select your repository
 
-3. **Set environment variables in Vercel:**
-   Add all the variables from your `.env.local` file to your Vercel project settings
+3. **Set environment variables in Railway:**
+   - Go to your project → Variables tab
+   - Add all variables from your `.env.local` file:
+     - `OPENAI_API_KEY`
+     - `REPLICATE_API_TOKEN`
+     - `GOOGLE_AI_API_KEY`
+     - All `NEXT_PUBLIC_FIREBASE_*` variables
+     - All `FIREBASE_*` admin variables
+     - All `STRIPE_*` variables
+     - `NEXT_PUBLIC_APP_URL` (set to your Railway domain)
 
-4. **Deploy:**
-   Vercel will automatically build and deploy your application
+4. **Generate a domain:**
+   - Go to Settings → Networking → Generate Domain
+   - Or add a custom domain
+
+5. **Deploy:**
+   Railway will automatically build and deploy on every push to main
 
 ### Alternative Deployment Options
-- **Firebase Hosting**: For static hosting
+- **Vercel**: For serverless deployment
 - **Render**: For full-stack deployment
-- **Railway**: For containerized deployment
 
 ## 🤝 Contributing
 

@@ -2,6 +2,7 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth as getAdminAuth } from 'firebase-admin/auth';
 import { getFirestore as getAdminFirestore, FieldValue } from 'firebase-admin/firestore';
 import { getStorage as getAdminStorage } from 'firebase-admin/storage';
+import { getModelCredits } from '@/lib/models';
 
 console.log("--- Initializing Firebase Admin SDK ---");
 
@@ -92,25 +93,8 @@ export async function getUserStats(userId: string) {
     let creditsUsed = 0;
     imagesSnapshot.forEach(doc => {
       const imageData = doc.data();
-      const model = imageData.model || 'flux-schnell'; // Default fallback
-      
-      // Map model to credits (matching the current credit structure)
-      const modelCredits: Record<string, number> = {
-        'lcm': 1,
-        'realistic-vision': 1,
-        'flux-schnell': 1,
-        'proteus-v03': 2,
-        'flux-dev': 2,
-        'ideogram-turbo': 2,
-        'seedream-3': 2,
-        'flux-pro': 3,
-        'ideogram-3': 3,
-        'imagen-4': 3,
-        'dall-e-3': 3,
-        'playground-v25': 5
-      };
-      
-      creditsUsed += modelCredits[model] || 2; // Default to 2 credits if model unknown
+      const model = imageData.model || 'flux-schnell';
+      creditsUsed += getModelCredits(model);
     });
     
     return {

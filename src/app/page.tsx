@@ -2,28 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { auth } from '@/lib/firebase';
 import Auth from '@/components/Auth';
-import Link from 'next/link';
 import Notification from '../components/Notification';
 import Header from '@/components/Header';
+import { getModel, getActiveModels, getModelsByTier, getAllSupportedRatios } from '@/lib/models';
+import type { ModelConfig, AspectRatio } from '@/lib/models/types';
 
-const getModelInfo = (modelId: string) => {
-  const models: Record<string, { name: string; cost: number; credits: number; description: string; supportedRatios: string[] }> = {
-    'lcm': { name: 'LCM (Latent Consistency)', cost: 0.0014, credits: 1, description: 'Ultra-fast 0.6s generation, 40 runs per $1, lightning speed', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
-    'realistic-vision': { name: 'Realistic Vision v5.1', cost: 0.0014, credits: 1, description: 'Photorealistic specialist, 2s generation, 40 runs per $1', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
-    'flux-schnell': { name: 'FLUX Schnell', cost: 0.003, credits: 1, description: 'Fast generation, great for testing ideas', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
-    'proteus-v03': { name: 'Proteus v0.3', cost: 0.018, credits: 2, description: 'Anime specialist, ultra-affordable, enhanced lighting & aesthetics', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
-    'flux-dev': { name: 'FLUX Dev', cost: 0.025, credits: 2, description: 'High quality, excellent detail', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
-    'ideogram-turbo': { name: 'Ideogram v2a Turbo', cost: 0.03, credits: 2, description: 'Fast & affordable, great text rendering + multiple styles', supportedRatios: ['1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3', '16:10', '10:16', '3:1', '1:3'] },
-    'playground-v25': { name: 'Playground v2.5', cost: 0.13, credits: 5, description: 'State-of-the-art aesthetic quality, beats DALL-E 3 & Midjourney', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
-    'flux-pro': { name: 'FLUX 1.1 Pro', cost: 0.04, credits: 3, description: 'Faster and improved, excellent quality', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
-    'seedream-3': { name: 'Seedream 3.0', cost: 0.03, credits: 2, description: 'Native 2K resolution, excellent text generation', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16', '3:2', '2:3'] },
-    'ideogram-3': { name: 'Ideogram v3 Balanced', cost: 0.07, credits: 3, description: 'Balance speed, quality & cost, excellent text rendering', supportedRatios: ['1:3', '3:1', '1:2', '2:1', '9:16', '16:9', '10:16', '16:10', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '1:1'] },
-    'imagen-4': { name: 'Imagen 4', cost: 0.05, credits: 3, description: 'Google flagship, superior detail & typography', supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'] },
-    'dall-e-3': { name: 'DALL-E 3', cost: 0.08, credits: 3, description: 'Premium quality, best for complex prompts', supportedRatios: ['1:1', '16:9', '9:16'] }
-  };
-  return models[modelId] || models['flux-schnell'];
+// Helper to get model info with fallback
+const getModelInfo = (modelId: string): ModelConfig => {
+  return getModel(modelId) || getModel('flux-schnell')!;
 };
 
 export default function Home() {
@@ -38,7 +25,7 @@ export default function Home() {
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [showNotification, setShowNotification] = useState(false);
 
-  const availableRatios = ['1:1', '16:9', '4:3', '3:4', '9:16', '3:2', '2:3', '1:2', '2:1', '1:3', '3:1', '10:16', '16:10', '4:5', '5:4'];
+  const availableRatios = getAllSupportedRatios();
 
   // Check admin status (simple email check)
   useEffect(() => {
@@ -76,8 +63,9 @@ export default function Home() {
   useEffect(() => {
     // When the model changes, check if the current aspect ratio is supported.
     // If not, reset it to the first supported ratio of the new model.
-    if (!getModelInfo(model).supportedRatios.includes(aspectRatio)) {
-      setAspectRatio(getModelInfo(model).supportedRatios[0]);
+    const modelInfo = getModelInfo(model);
+    if (!modelInfo.supportedRatios.includes(aspectRatio as AspectRatio)) {
+      setAspectRatio(modelInfo.supportedRatios[0]);
     }
   }, [model, aspectRatio]);
 
@@ -196,25 +184,33 @@ export default function Home() {
                         value={model}
                         onChange={(e) => setModel(e.target.value)}
                       >
-                        <optgroup label="⚡ Lightning Fast & Ultra-Cheap">
-                          <option value="lcm">LCM (Latent Consistency) - (1 credit)</option>
-                          <option value="realistic-vision">Realistic Vision v5.1 - (1 credit)</option>
-                          <option value="flux-schnell">FLUX Schnell - (1 credit)</option>
+                        <optgroup label="⚡ Fast (1 credit)">
+                          {getModelsByTier('fast').map(m => (
+                            <option key={m.id} value={m.id}>
+                              {m.name} - ({m.credits} credit){m.isNew && ' ✨ NEW'}
+                            </option>
+                          ))}
                         </optgroup>
-                        <optgroup label="💨 Fast & Affordable">
-                          <option value="proteus-v03">Proteus v0.3 - (2 credits)</option>
-                          <option value="flux-dev">FLUX Dev - (2 credits)</option>
-                          <option value="ideogram-turbo">Ideogram v2a Turbo - (2 credits)</option>
-                          <option value="seedream-3">Seedream 3.0 - (2 credits)</option>
+                        <optgroup label="💨 Standard (2 credits)">
+                          {getModelsByTier('standard').map(m => (
+                            <option key={m.id} value={m.id}>
+                              {m.name} - ({m.credits} credits){m.isNew && ' ✨ NEW'}
+                            </option>
+                          ))}
                         </optgroup>
-                        <optgroup label="🎨 Premium Quality">
-                          <option value="flux-pro">FLUX 1.1 Pro - (3 credits)</option>
-                          <option value="ideogram-3">Ideogram v3 Balanced - (3 credits)</option>
-                          <option value="imagen-4">Imagen 4 - (3 credits)</option>
-                          <option value="dall-e-3">DALL-E 3 - (3 credits)</option>
+                        <optgroup label="🎨 Premium (3 credits)">
+                          {getModelsByTier('premium').map(m => (
+                            <option key={m.id} value={m.id}>
+                              {m.name} - ({m.credits} credits){m.isNew && ' ✨ NEW'}
+                            </option>
+                          ))}
                         </optgroup>
-                        <optgroup label="👑 Ultra Premium">
-                          <option value="playground-v25">Playground v2.5 - (5 credits)</option>
+                        <optgroup label="👑 Ultra (4 credits)">
+                          {getModelsByTier('ultra').map(m => (
+                            <option key={m.id} value={m.id}>
+                              {m.name} - ({m.credits} credits){m.isNew && ' ✨ NEW'}
+                            </option>
+                          ))}
                         </optgroup>
                       </select>
                       <p className="text-sm text-gray-400 mt-1 pl-1">
@@ -227,7 +223,7 @@ export default function Home() {
                     <label className="block text-sm font-medium text-gray-300 mb-2">Aspect Ratio</label>
                     <div className="flex flex-wrap gap-2">
                       {availableRatios.map((ratio) => {
-                        const isSupported = getModelInfo(model).supportedRatios.includes(ratio);
+                        const isSupported = getModelInfo(model).supportedRatios.includes(ratio as AspectRatio);
                         return (
                           <button
                             key={ratio}
@@ -323,7 +319,7 @@ export default function Home() {
                       <span className="text-amber-700 font-semibold">💰 40 runs per $1</span>
                     </div>
                     <div className="bg-rose-50 backdrop-blur-sm border border-rose-200 rounded-xl px-6 py-3">
-                      <span className="text-rose-700 font-semibold">🎨 12 AI models</span>
+                      <span className="text-rose-700 font-semibold">🎨 {getActiveModels().length} AI models</span>
                     </div>
                   </div>
                 </div>
@@ -335,95 +331,95 @@ export default function Home() {
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
                   <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 mb-4">
-                    12 Cutting-Edge AI Models
+                    {getActiveModels().length} Cutting-Edge AI Models
                   </h2>
                   <p className="text-lg text-stone-600 max-w-3xl mx-auto">
-                    From lightning-fast creation to premium quality, we've got the perfect model for every need and budget.
+                    From lightning-fast creation to premium quality, we&apos;ve got the perfect model for every need and budget.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {/* Ultra-Fast & Cheap - 1 Credit */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {/* Fast Tier - 1 Credit */}
                   <div className="bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-xl p-6 border border-yellow-500/20">
                     <div className="text-yellow-400 text-2xl mb-3">⚡</div>
-                    <h3 className="text-xl font-bold text-white mb-2">Ultra-Fast Tier</h3>
-                    <p className="text-gray-300 mb-4">1 credit • Lightning speed & value</p>
+                    <h3 className="text-xl font-bold text-white mb-2">Fast Tier</h3>
+                    <p className="text-gray-300 mb-4">1 credit • Lightning speed</p>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-400">LCM</span>
-                        <span className="text-sm text-yellow-400">0.6s • 40/$1</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-400">Realistic Vision</span>
-                        <span className="text-sm text-yellow-400">2s • 40/$1</span>
-                      </div>
-                      <div className="flex justify-between">
                         <span className="text-sm text-gray-400">FLUX Schnell</span>
-                        <span className="text-sm text-yellow-400">Fast • 333/$1</span>
+                        <span className="text-sm text-yellow-400">~2s</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-400">Nano Banana</span>
+                        <span className="text-sm text-yellow-400">~1s ✨</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Standard - 2 Credits */}
+                  {/* Standard Tier - 2 Credits */}
                   <div className="bg-gradient-to-br from-green-900/20 to-emerald-900/20 rounded-xl p-6 border border-green-500/20">
                     <div className="text-green-400 text-2xl mb-3">💨</div>
                     <h3 className="text-xl font-bold text-white mb-2">Standard Tier</h3>
-                    <p className="text-gray-300 mb-4">2 credits • Quality & affordability</p>
+                    <p className="text-gray-300 mb-4">2 credits • Quality & value</p>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-400">Proteus v0.3</span>
-                        <span className="text-sm text-green-400">Anime • 55/$1</span>
-                      </div>
-                      <div className="flex justify-between">
                         <span className="text-sm text-gray-400">FLUX Dev</span>
-                        <span className="text-sm text-green-400">Quality • 40/$1</span>
+                        <span className="text-sm text-green-400">Quality</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-400">Ideogram Turbo</span>
-                        <span className="text-sm text-green-400">Text • 33/$1</span>
+                        <span className="text-sm text-green-400">Text</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-400">Seedream 3.0</span>
-                        <span className="text-sm text-green-400">2K • 33/$1</span>
+                        <span className="text-sm text-green-400">2K</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Premium - 3 Credits */}
+                  {/* Premium Tier - 3 Credits */}
                   <div className="bg-gradient-to-br from-blue-900/20 to-indigo-900/20 rounded-xl p-6 border border-blue-500/20">
                     <div className="text-blue-400 text-2xl mb-3">🎨</div>
                     <h3 className="text-xl font-bold text-white mb-2">Premium Tier</h3>
-                    <p className="text-gray-300 mb-4">3 credits • Professional quality</p>
+                    <p className="text-gray-300 mb-4">3 credits • Professional</p>
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-400">FLUX 1.1 Pro</span>
-                        <span className="text-sm text-blue-400">Enhanced • 25/$1</span>
+                        <span className="text-sm text-blue-400">Fast</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-400">Ideogram v3</span>
-                        <span className="text-sm text-blue-400">Text Master • 14/$1</span>
+                        <span className="text-sm text-blue-400">Text</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-400">Imagen 4</span>
-                        <span className="text-sm text-blue-400">Google • 20/$1</span>
+                        <span className="text-sm text-blue-400">Google</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-400">DALL-E 3</span>
-                        <span className="text-sm text-blue-400">OpenAI • 12/$1</span>
+                        <span className="text-sm text-blue-400">OpenAI</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-400">Recraft V3</span>
+                        <span className="text-sm text-blue-400">Design ✨</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Ultra Premium - 5 Credits */}
-                  <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-xl p-6 border border-purple-500/20 md:col-span-2 lg:col-span-3">
-                    <div className="text-center mb-6">
-                      <div className="text-purple-400 text-2xl mb-3">👑</div>
-                      <h3 className="text-xl font-bold text-white mb-2">Ultra Premium Tier</h3>
-                      <p className="text-gray-300">5 credits • State-of-the-art aesthetic quality</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg text-gray-300">Playground v2.5</div>
-                      <div className="text-sm text-purple-400">Beats DALL-E 3 & Midjourney in user studies • 7 images per $1</div>
+                  {/* Ultra Tier - 4 Credits */}
+                  <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-xl p-6 border border-purple-500/20">
+                    <div className="text-purple-400 text-2xl mb-3">👑</div>
+                    <h3 className="text-xl font-bold text-white mb-2">Ultra Tier</h3>
+                    <p className="text-gray-300 mb-4">4 credits • Best quality</p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-400">FLUX Ultra</span>
+                        <span className="text-sm text-purple-400">Hi-Res ✨</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-400">Nano Banana Pro</span>
+                        <span className="text-sm text-purple-400">4K ✨</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -664,7 +660,7 @@ export default function Home() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                   <div>
-                    <div className="text-2xl font-bold text-emerald-600">0.6s</div>
+                    <div className="text-2xl font-bold text-emerald-600">~1s</div>
                     <div className="text-sm text-stone-500">Fastest Creation</div>
                   </div>
                   <div>
@@ -672,7 +668,7 @@ export default function Home() {
                     <div className="text-sm text-stone-500">Best Value</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-rose-600">12</div>
+                    <div className="text-2xl font-bold text-rose-600">{getActiveModels().length}</div>
                     <div className="text-sm text-stone-500">AI Models</div>
                   </div>
                 </div>
