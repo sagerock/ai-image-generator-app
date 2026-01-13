@@ -78,7 +78,7 @@ export default function Gallery() {
           <p className="text-stone-600 mb-6">You need to be signed in to view your gallery.</p>
           <Link
             href="/"
-            className="inline-block px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors"
+            className="inline-block px-6 py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-lg transition-colors"
           >
             Back to Home
           </Link>
@@ -158,7 +158,7 @@ export default function Gallery() {
             <p className="text-stone-600 mb-6 max-w-md mx-auto">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors"
+              className="px-6 py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-lg transition-colors"
             >
               Try Again
             </button>
@@ -171,7 +171,7 @@ export default function Gallery() {
             </p>
             <Link
               href="/"
-              className="inline-block px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors"
+              className="inline-block px-6 py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-lg transition-colors"
             >
               Create Your First Image
             </Link>
@@ -218,7 +218,7 @@ export default function Gallery() {
                           e.stopPropagation();
                           downloadImage(image.imageUrl, image.prompt, image.model);
                         }}
-                        className="text-xs text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+                        className="text-xs text-sage-500 hover:text-sage-600 font-medium transition-colors"
                       >
                         Download
                       </button>

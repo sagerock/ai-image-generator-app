@@ -58,7 +58,7 @@ export default function AccountPage() {
     return (
       <main className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sage-500 mx-auto mb-4"></div>
           <p className="text-stone-600">Loading your account...</p>
         </div>
       </main>
@@ -91,13 +91,13 @@ export default function AccountPage() {
               </div>
               <div>
                 <div className="text-sm text-stone-500 mb-1">Credits Balance</div>
-                <div className="font-bold text-2xl text-emerald-600">
+                <div className="font-bold text-2xl text-sage-500">
                   {credits !== null ? credits : '...'} credits
                 </div>
                 {credits !== null && credits < 10 && (
                   <div className="mt-2 text-sm text-stone-600">
                     Need more credits? Email{' '}
-                    <a href="mailto:sage@sagerock.com" className="text-emerald-600 hover:text-emerald-700 underline">
+                    <a href="mailto:sage@sagerock.com" className="text-sage-500 hover:text-sage-600 underline">
                       sage@sagerock.com
                     </a>
                   </div>

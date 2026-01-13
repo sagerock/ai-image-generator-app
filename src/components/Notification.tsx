@@ -43,7 +43,7 @@ const Notification = ({
   const getStyles = () => {
     switch (type) {
       case 'success':
-        return 'bg-emerald-50 border-emerald-200 text-emerald-800';
+        return 'bg-sage-50 border-sage-200 text-sage-700';
       case 'error':
         return 'bg-red-50 border-red-200 text-red-800';
       case 'info':

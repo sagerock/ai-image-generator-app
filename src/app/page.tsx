@@ -145,7 +145,7 @@ export default function Home() {
                   <textarea
                     id="prompt"
                     rows={3}
-                    className="w-full border border-stone-300 rounded-lg p-3 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
+                    className="w-full border border-stone-300 rounded-lg p-3 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-sage-500 resize-none"
                     placeholder="A serene mountain landscape at sunset..."
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
@@ -158,7 +158,7 @@ export default function Home() {
                   </label>
                   <select
                     id="model"
-                    className="w-full border border-stone-300 rounded-lg p-3 text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    className="w-full border border-stone-300 rounded-lg p-3 text-stone-900 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-sage-500"
                     value={model}
                     onChange={(e) => setModel(e.target.value)}
                   >
@@ -206,7 +206,7 @@ export default function Home() {
                           disabled={!isSupported}
                           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                             aspectRatio === ratio
-                              ? 'bg-emerald-600 text-white'
+                              ? 'bg-sage-500 text-white'
                               : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                           } ${!isSupported ? 'opacity-40 cursor-not-allowed' : ''}`}
                         >
@@ -221,7 +221,7 @@ export default function Home() {
                   type="button"
                   onClick={handleGenerate}
                   disabled={imageLoading || !prompt}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-sage-500 hover:bg-sage-600 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {imageLoading ? 'Generating...' : 'Generate Image'}
                 </button>
@@ -245,7 +245,7 @@ export default function Home() {
                   <a
                     href={imageUrl}
                     download="generated-image.webp"
-                    className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                    className="text-sm text-sage-500 hover:text-sage-600 font-medium"
                   >
                     Download Image
                   </a>
@@ -270,7 +270,7 @@ export default function Home() {
               </p>
               <a
                 href="#auth"
-                className="inline-block px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors"
+                className="inline-block px-6 py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-lg transition-colors"
               >
                 Get Started Free
               </a>

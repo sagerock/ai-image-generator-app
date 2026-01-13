@@ -36,7 +36,7 @@ export default function Header({ credits, isAdmin, isLandingPage = false }: Head
               <a href="#models" className="text-stone-600 hover:text-stone-900 transition-colors text-sm font-medium">
                 Models
               </a>
-              <a href="#auth" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors">
+              <a href="#auth" className="px-4 py-2 bg-sage-500 hover:bg-sage-600 text-white text-sm font-medium rounded-lg transition-colors">
                 Sign In
               </a>
             </nav>
@@ -64,7 +64,7 @@ export default function Header({ credits, isAdmin, isLandingPage = false }: Head
 
               <Link
                 href="/"
-                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
+                className="px-3 py-1.5 bg-sage-500 hover:bg-sage-600 text-white text-sm font-medium rounded-lg transition-colors"
               >
                 Create
               </Link>

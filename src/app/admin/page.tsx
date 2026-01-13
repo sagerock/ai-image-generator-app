@@ -176,7 +176,7 @@ const AdminDashboard = () => {
           <button
             onClick={fetchAdminData}
             disabled={isLoading}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            className="px-4 py-2 bg-sage-500 hover:bg-sage-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
           >
             {isLoading ? 'Loading...' : 'Refresh Data'}
           </button>
@@ -216,7 +216,7 @@ const AdminDashboard = () => {
                             />
                             <button
                               onClick={() => updateUserCredits(userData.id, newCredits)}
-                              className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded transition-colors"
+                              className="px-2 py-1 bg-sage-500 hover:bg-sage-600 text-white text-xs rounded transition-colors"
                             >
                               Save
                             </button>
@@ -230,7 +230,7 @@ const AdminDashboard = () => {
                         ) : (
                           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                             userData.credits > 5
-                              ? 'bg-emerald-100 text-emerald-700'
+                              ? 'bg-sage-100 text-sage-600'
                               : userData.credits > 0
                               ? 'bg-amber-100 text-amber-700'
                               : 'bg-red-100 text-red-700'
@@ -253,19 +253,19 @@ const AdminDashboard = () => {
                             </button>
                             <button
                               onClick={() => updateUserCredits(userData.id, userData.credits + 50)}
-                              className="px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs rounded transition-colors"
+                              className="px-2 py-1 bg-sage-100 hover:bg-sage-200 text-sage-600 text-xs rounded transition-colors"
                             >
                               +50
                             </button>
                             <button
                               onClick={() => updateUserCredits(userData.id, userData.credits + 100)}
-                              className="px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs rounded transition-colors"
+                              className="px-2 py-1 bg-sage-100 hover:bg-sage-200 text-sage-600 text-xs rounded transition-colors"
                             >
                               +100
                             </button>
                             <button
                               onClick={() => updateUserCredits(userData.id, userData.credits + 500)}
-                              className="px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs rounded transition-colors"
+                              className="px-2 py-1 bg-sage-100 hover:bg-sage-200 text-sage-600 text-xs rounded transition-colors"
                             >
                               +500
                             </button>

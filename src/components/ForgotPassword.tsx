@@ -59,7 +59,7 @@ const ForgotPassword = ({ onBackToLogin }: ForgotPasswordProps) => {
           <div className="text-center">
             <h2 className="text-xl font-bold text-stone-900 mb-2">Check Your Email</h2>
             <p className="text-stone-600 mb-4">We've sent a password reset link to:</p>
-            <p className="text-emerald-600 font-semibold mb-4">{email}</p>
+            <p className="text-sage-500 font-semibold mb-4">{email}</p>
             <p className="text-sm text-stone-500 mb-6">
               Click the link in the email to reset your password. Check your spam folder if you don't see it.
             </p>
@@ -70,7 +70,7 @@ const ForgotPassword = ({ onBackToLogin }: ForgotPasswordProps) => {
                   setSuccess(false);
                   setEmail('');
                 }}
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors"
+                className="w-full py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-lg transition-colors"
               >
                 Send Another Email
               </button>
@@ -114,7 +114,7 @@ const ForgotPassword = ({ onBackToLogin }: ForgotPasswordProps) => {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border border-stone-300 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+              className="w-full p-3 border border-stone-300 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-sage-500 transition-colors"
               placeholder="your@email.com"
               required
             />
@@ -129,7 +129,7 @@ const ForgotPassword = ({ onBackToLogin }: ForgotPasswordProps) => {
           <button
             type="submit"
             disabled={loading || !email.trim()}
-            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <div className="flex items-center justify-center gap-2">
@@ -154,7 +154,7 @@ const ForgotPassword = ({ onBackToLogin }: ForgotPasswordProps) => {
 
           <button
             onClick={onBackToLogin}
-            className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors text-sm"
+            className="text-sage-500 hover:text-sage-600 font-medium transition-colors text-sm"
           >
             Back to Sign In
           </button>

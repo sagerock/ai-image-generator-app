@@ -85,7 +85,7 @@ const Auth = () => {
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 border border-stone-300 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+            className="w-full p-3 border border-stone-300 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-sage-500 transition-colors"
             placeholder="your@email.com"
             required
           />
@@ -100,7 +100,7 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => setShowForgotPassword(true)}
-                className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+                className="text-sm text-sage-500 hover:text-sage-600 font-medium transition-colors"
               >
                 Forgot?
               </button>
@@ -111,7 +111,7 @@ const Auth = () => {
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 border border-stone-300 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+            className="w-full p-3 border border-stone-300 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-sage-500 transition-colors"
             placeholder="••••••••"
             required
           />
@@ -126,7 +126,7 @@ const Auth = () => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <div className="flex items-center justify-center gap-2">
@@ -153,7 +153,7 @@ const Auth = () => {
 
         <button
           onClick={() => setIsSignUp(!isSignUp)}
-          className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors text-sm"
+          className="text-sage-500 hover:text-sage-600 font-medium transition-colors text-sm"
         >
           {isSignUp ? 'Sign in instead' : 'Create account'}
         </button>
