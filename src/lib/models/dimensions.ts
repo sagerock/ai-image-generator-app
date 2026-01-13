@@ -21,12 +21,26 @@ const STANDARD_DIMENSIONS: Record<AspectRatio, DimensionMapping> = {
   '21:9': { width: 1536, height: 640 },
 };
 
-// DALL-E specific sizes (OpenAI only supports these exact sizes)
+// DALL-E specific sizes (OpenAI only supports these exact sizes) - DEPRECATED
 type DalleSize = '1024x1024' | '1792x1024' | '1024x1792';
 const DALLE_SIZES: Record<string, DalleSize> = {
   '1:1': '1024x1024',
   '16:9': '1792x1024',
   '9:16': '1024x1792',
+};
+
+// GPT Image sizes (gpt-image-1, gpt-image-1-mini, gpt-image-1.5)
+// Supports: 1024x1024, 1536x1024 (landscape), 1024x1536 (portrait), auto
+type GptImageSize = '1024x1024' | '1536x1024' | '1024x1536' | 'auto';
+const GPT_IMAGE_SIZES: Record<string, GptImageSize> = {
+  '1:1': '1024x1024',
+  '16:9': '1536x1024',
+  '9:16': '1024x1536',
+  '4:3': '1536x1024',  // Use landscape for 4:3
+  '3:4': '1024x1536',  // Use portrait for 3:4
+  '3:2': '1536x1024',
+  '2:3': '1024x1536',
+  '21:9': '1536x1024', // Wide -> landscape
 };
 
 /**
@@ -40,9 +54,18 @@ export function getDimensions(ratio: AspectRatio): DimensionMapping {
 /**
  * Get DALL-E specific size string for a given aspect ratio
  * DALL-E only supports 1:1, 16:9, and 9:16
+ * @deprecated Use getGptImageSize for new GPT Image models
  */
 export function getDalleSize(ratio: AspectRatio): DalleSize {
   return DALLE_SIZES[ratio] ?? '1024x1024';
+}
+
+/**
+ * Get GPT Image size string for a given aspect ratio
+ * GPT Image models support: 1024x1024, 1536x1024, 1024x1536, auto
+ */
+export function getGptImageSize(ratio: AspectRatio): GptImageSize {
+  return GPT_IMAGE_SIZES[ratio] ?? '1024x1024';
 }
 
 /**
