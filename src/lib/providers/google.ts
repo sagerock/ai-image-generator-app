@@ -21,37 +21,33 @@ export class GoogleProvider implements ImageProvider {
 
     console.log(`🎨 Generating with ${model.name} (${model.providerModelId})`);
 
-    // Determine if this is an Imagen model or Gemini model
-    const isImagenModel = model.providerModelId.startsWith('imagen-');
-
-    if (isImagenModel) {
-      return this.generateWithImagen(request);
-    } else {
-      return this.generateWithGemini(request);
-    }
-  }
-
-  private async generateWithGemini(request: GenerationRequest): Promise<GenerationResult> {
-    const { prompt, model, aspectRatio } = request;
-
-    // Gemini 2.0 Flash uses generateContent endpoint
+    // Gemini image models use the standard generateContent endpoint
+    // They natively output images without needing responseModalities
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model.providerModelId}:generateContent`;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const requestBody: any = {
       contents: [{
         parts: [{
-          text: `Generate an image: ${prompt}`
+          text: prompt
         }]
-      }],
-      generationConfig: {
-        responseModalities: ['IMAGE'],
-      },
+      }]
     };
 
-    // Add aspect ratio for supported models
+    // Add image configuration for aspect ratio
     if (aspectRatio && aspectRatio !== '1:1') {
-      requestBody.generationConfig.aspectRatio = aspectRatio;
+      requestBody.generationConfig = {
+        imageConfig: {
+          aspectRatio: aspectRatio
+        }
+      };
+    }
+
+    // Add image size for Gemini 3 Pro (supports 1K, 2K, 4K)
+    if (model.defaultParams?.imageSize) {
+      requestBody.generationConfig = requestBody.generationConfig || {};
+      requestBody.generationConfig.imageConfig = requestBody.generationConfig.imageConfig || {};
+      requestBody.generationConfig.imageConfig.imageSize = model.defaultParams.imageSize;
     }
 
     console.log('📤 Gemini Request:', JSON.stringify(requestBody, null, 2));
@@ -81,76 +77,25 @@ export class GoogleProvider implements ImageProvider {
     }
 
     const parts = candidates[0].content?.parts || [];
+
+    // Find image part in response
     const imagePart = parts.find((part: { inlineData?: { mimeType: string; data: string } }) =>
       part.inlineData?.mimeType?.startsWith('image/')
     );
 
     if (!imagePart?.inlineData) {
+      // Log any text response for debugging
+      const textPart = parts.find((part: { text?: string }) => part.text);
+      if (textPart?.text) {
+        console.log('📝 Model text response:', textPart.text);
+      }
       console.error('❌ No image data in response:', JSON.stringify(candidates[0], null, 2));
       throw new Error('No image data returned from Gemini API');
     }
 
+    // Convert base64 to data URL
     const imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
     console.log('✅ Gemini generation complete');
-    return { imageUrl, rawOutput: data };
-  }
-
-  private async generateWithImagen(request: GenerationRequest): Promise<GenerationResult> {
-    const { prompt, model, aspectRatio } = request;
-
-    // Imagen uses the predict endpoint via Generative Language API
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model.providerModelId}:predict`;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const requestBody: any = {
-      instances: [{
-        prompt: prompt
-      }],
-      parameters: {
-        sampleCount: 1,
-      }
-    };
-
-    // Add aspect ratio if not 1:1
-    if (aspectRatio && aspectRatio !== '1:1') {
-      requestBody.parameters.aspectRatio = aspectRatio;
-    }
-
-    console.log('📤 Imagen Request:', JSON.stringify(requestBody, null, 2));
-
-    const response = await fetch(`${endpoint}?key=${this.apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Imagen API Error:', errorText);
-      throw new Error(`Imagen API failed: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log('📊 Imagen Response received');
-
-    // Extract image from Imagen response
-    const predictions = data.predictions || [];
-    if (predictions.length === 0) {
-      console.error('❌ No predictions in response:', JSON.stringify(data, null, 2));
-      throw new Error('No predictions returned from Imagen API');
-    }
-
-    const imageData = predictions[0].bytesBase64Encoded;
-    if (!imageData) {
-      console.error('❌ No image data in prediction:', JSON.stringify(predictions[0], null, 2));
-      throw new Error('No image data returned from Imagen API');
-    }
-
-    // Imagen returns PNG by default
-    const imageUrl = `data:image/png;base64,${imageData}`;
-    console.log('✅ Imagen generation complete');
     return { imageUrl, rawOutput: data };
   }
 }
