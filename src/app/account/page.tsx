@@ -82,10 +82,7 @@ export default function AccountPage() {
         <div className="grid gap-6">
           {/* Account Overview */}
           <div className="bg-white rounded-xl border border-stone-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-stone-900">Account Overview</h2>
-              <span className="text-2xl">👤</span>
-            </div>
+            <h2 className="text-lg font-semibold text-stone-900 mb-4">Account Overview</h2>
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
@@ -111,10 +108,7 @@ export default function AccountPage() {
 
           {/* Quick Actions */}
           <div className="bg-white rounded-xl border border-stone-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-stone-900">Quick Actions</h2>
-              <span className="text-2xl">⚡</span>
-            </div>
+            <h2 className="text-lg font-semibold text-stone-900 mb-4">Quick Actions</h2>
 
             <div className="grid md:grid-cols-2 gap-4">
               <button

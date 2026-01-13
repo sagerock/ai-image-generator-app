@@ -8,7 +8,6 @@ import Header from '@/components/Header';
 import { getModel, getActiveModels, getModelsByTier, getAllSupportedRatios } from '@/lib/models';
 import type { ModelConfig, AspectRatio } from '@/lib/models/types';
 
-// Helper to get model info with fallback
 const getModelInfo = (modelId: string): ModelConfig => {
   return getModel(modelId) || getModel('flux-schnell')!;
 };
@@ -27,27 +26,21 @@ export default function Home() {
 
   const availableRatios = getAllSupportedRatios();
 
-  // Check admin status (simple email check)
   useEffect(() => {
     if (user?.email) {
-      const adminEmails = ['admin@example.com', 'sage@sagerock.com']; // Add your admin emails here
+      const adminEmails = ['admin@example.com', 'sage@sagerock.com'];
       setIsAdmin(adminEmails.includes(user.email));
     }
   }, [user]);
 
-  // Fetch user credits
   useEffect(() => {
     const fetchUserInfo = async () => {
       if (!user) return;
-
       try {
         const token = await user.getIdToken();
         const response = await fetch('/api/user-info', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          headers: { 'Authorization': `Bearer ${token}` }
         });
-
         if (response.ok) {
           const data = await response.json();
           setCredits(data.credits);
@@ -56,13 +49,10 @@ export default function Home() {
         console.error('Failed to fetch user info:', error);
       }
     };
-
     fetchUserInfo();
   }, [user]);
 
   useEffect(() => {
-    // When the model changes, check if the current aspect ratio is supported.
-    // If not, reset it to the first supported ratio of the new model.
     const modelInfo = getModelInfo(model);
     if (!modelInfo.supportedRatios.includes(aspectRatio as AspectRatio)) {
       setAspectRatio(modelInfo.supportedRatios[0]);
@@ -91,9 +81,7 @@ export default function Home() {
       const idToken = await user.getIdToken();
       const response = await fetch('/api/generate', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, model, idToken, aspectRatio }),
       });
 
@@ -101,21 +89,15 @@ export default function Home() {
         const errorData = await response.json();
         setNotification({ message: errorData.error || 'Failed to generate image', type: 'error' });
         setShowNotification(true);
-        if (errorData.credits !== undefined) {
-          setCredits(errorData.credits);
-        }
+        if (errorData.credits !== undefined) setCredits(errorData.credits);
         return;
       }
 
       const data = await response.json();
       setImageUrl(data.imageUrl);
-      
-      if (data.credits !== undefined) {
-        setCredits(data.credits);
-      }
+      if (data.credits !== undefined) setCredits(data.credits);
       setNotification({ message: 'Image generated successfully!', type: 'success' });
       setShowNotification(true);
-
     } catch (error) {
       console.error(error);
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
@@ -128,17 +110,17 @@ export default function Home() {
 
   if (authLoading) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gray-900">
+      <main className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-300">Loading your creative space...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-stone-300 border-t-stone-600 mx-auto mb-4"></div>
+          <p className="text-stone-500 text-sm">Loading...</p>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-white text-gray-900">
+    <main className="min-h-screen bg-stone-50">
       {notification && (
         <Notification
           message={notification.message}
@@ -147,469 +129,279 @@ export default function Home() {
           onClose={() => setShowNotification(false)}
         />
       )}
-      <div className="container mx-auto px-4 pt-8 pb-8">
-        {user ? (
-          <div>
-            <Header credits={credits} isAdmin={isAdmin} />
-            
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 mb-8 border border-gray-700">
-                <div className="space-y-8">
-                  <div>
-                    <label htmlFor="prompt" className="block text-sm font-medium text-gray-300 mb-2">
-                      Your vision
-                    </label>
-                    <div className="relative w-full">
-                      <textarea
-                        id="prompt"
-                        name="prompt"
-                        rows={3}
-                        className="w-full bg-gray-900 border-2 border-gray-700 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 resize-none"
-                        placeholder="A cinematic shot of a baby raccoon wearing a tiny top hat..."
-                        value={prompt}
-                        onChange={(e) => setPrompt(e.target.value)}
-                      />
-                    </div>
-                  </div>
 
-                  <div className="flex flex-col sm:flex-row gap-8 w-full">
-                    <div className="flex-grow">
-                      <label htmlFor="model" className="block text-sm font-medium text-gray-300 mb-2">
-                        Select Model
-                      </label>
-                      <select
-                        id="model"
-                        name="model"
-                        className="w-full bg-gray-900 border-2 border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
-                        value={model}
-                        onChange={(e) => setModel(e.target.value)}
-                      >
-                        <optgroup label="⚡ Fast (1 credit)">
-                          {getModelsByTier('fast').map(m => (
-                            <option key={m.id} value={m.id}>
-                              {m.name} - ({m.credits} credit){m.isNew && ' ✨ NEW'}
-                            </option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="💨 Standard (2 credits)">
-                          {getModelsByTier('standard').map(m => (
-                            <option key={m.id} value={m.id}>
-                              {m.name} - ({m.credits} credits){m.isNew && ' ✨ NEW'}
-                            </option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="🎨 Premium (3 credits)">
-                          {getModelsByTier('premium').map(m => (
-                            <option key={m.id} value={m.id}>
-                              {m.name} - ({m.credits} credits){m.isNew && ' ✨ NEW'}
-                            </option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="👑 Ultra (4 credits)">
-                          {getModelsByTier('ultra').map(m => (
-                            <option key={m.id} value={m.id}>
-                              {m.name} - ({m.credits} credits){m.isNew && ' ✨ NEW'}
-                            </option>
-                          ))}
-                        </optgroup>
-                      </select>
-                      <p className="text-sm text-gray-400 mt-1 pl-1">
-                        {getModelInfo(model).description}
-                      </p>
-                    </div>
-                  </div>
+      {user ? (
+        // LOGGED IN - Generator UI
+        <div>
+          <Header credits={credits} isAdmin={isAdmin} />
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Aspect Ratio</label>
-                    <div className="flex flex-wrap gap-2">
-                      {availableRatios.map((ratio) => {
-                        const isSupported = getModelInfo(model).supportedRatios.includes(ratio as AspectRatio);
-                        return (
-                          <button
-                            key={ratio}
-                            type="button"
-                            onClick={() => isSupported && setAspectRatio(ratio)}
-                            disabled={!isSupported}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                              aspectRatio === ratio
-                                ? 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-400'
-                                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                            } ${
-                              !isSupported
-                                ? 'opacity-50 cursor-not-allowed'
-                                : ''
-                            }`}
-                          >
-                            {ratio}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+          <div className="max-w-2xl mx-auto px-4 py-8">
+            <div className="bg-white rounded-xl border border-stone-200 p-6 mb-6">
+              <div className="space-y-6">
+                <div>
+                  <label htmlFor="prompt" className="block text-sm font-medium text-stone-700 mb-2">
+                    Describe your image
+                  </label>
+                  <textarea
+                    id="prompt"
+                    rows={3}
+                    className="w-full border border-stone-300 rounded-lg p-3 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
+                    placeholder="A serene mountain landscape at sunset..."
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                  />
+                </div>
 
-                  <button
-                    type="button"
-                    onClick={handleGenerate}
-                    disabled={imageLoading || !prompt}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-4 rounded-xl transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg hover:shadow-xl"
+                <div>
+                  <label htmlFor="model" className="block text-sm font-medium text-stone-700 mb-2">
+                    Model
+                  </label>
+                  <select
+                    id="model"
+                    className="w-full border border-stone-300 rounded-lg p-3 text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    value={model}
+                    onChange={(e) => setModel(e.target.value)}
                   >
-                    {imageLoading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                        Generating...
-                      </>
-                    ) : (
-                      'Generate Image'
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {imageLoading && (
-                <div className="text-center p-8">
-                  <div className="animate-pulse">
-                    <div className="w-full aspect-square bg-gray-700 rounded-2xl mx-auto flex items-center justify-center">
-                      <p className="text-gray-400">Your vision is materializing...</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {imageUrl && (
-                <div className="mt-8 bg-gray-800 rounded-2xl shadow-2xl p-4 border border-gray-700">
-                  <h2 className="text-2xl font-bold mb-4 text-center">Your Creation</h2>
-                  <img src={imageUrl} alt="Generated" className="rounded-xl w-full mx-auto shadow-lg" />
-                  <div className="text-center mt-4">
-                    <a href={imageUrl} download="generated-image.webp" className="text-blue-400 hover:text-blue-300 transition-colors">
-                      Download Image
-                    </a>
-                  </div>
-                </div>
-              )}
-              
-
-            </div>
-          </div>
-        ) : (
-          <div>
-            <Header isLandingPage={true} />
-            {/* Hero Section */}
-            <section className="relative overflow-hidden pt-20">
-              {/* Background gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-amber-50"></div>
-              
-              <div className="relative max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
-                <div className="text-center">
-                  <h1 className="text-5xl sm:text-7xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-amber-600 bg-clip-text text-transparent mb-6">
-                    Optic Engine
-                  </h1>
-                  <p className="text-xl sm:text-2xl text-stone-600 mb-4 max-w-3xl mx-auto">
-                    The world&apos;s most comprehensive AI image creation platform
-                  </p>
-                  <p className="text-lg text-stone-500 mb-8 max-w-4xl mx-auto">
-                    Create stunning images in seconds with 12 cutting-edge AI models. From ultra-fast 0.6s creation 
-                    to premium photorealistic quality - all at unbeatable prices starting at just 2.5¢ per image.
-                  </p>
-                  
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-                    <div className="bg-emerald-50 backdrop-blur-sm border border-emerald-200 rounded-xl px-6 py-3">
-                      <span className="text-emerald-700 font-semibold">⚡ 0.6s creation</span>
-                    </div>
-                    <div className="bg-amber-50 backdrop-blur-sm border border-amber-200 rounded-xl px-6 py-3">
-                      <span className="text-amber-700 font-semibold">💰 40 runs per $1</span>
-                    </div>
-                    <div className="bg-rose-50 backdrop-blur-sm border border-rose-200 rounded-xl px-6 py-3">
-                      <span className="text-rose-700 font-semibold">🎨 {getActiveModels().length} AI models</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Model Showcase */}
-            <section id="models" className="py-16 bg-stone-50">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 mb-4">
-                    {getActiveModels().length} Cutting-Edge AI Models
-                  </h2>
-                  <p className="text-lg text-stone-600 max-w-3xl mx-auto">
-                    From lightning-fast creation to premium quality, we&apos;ve got the perfect model for every need and budget.
+                    <optgroup label="Fast (1 credit)">
+                      {getModelsByTier('fast').map(m => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}{m.isNew && ' (New)'}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Standard (2 credits)">
+                      {getModelsByTier('standard').map(m => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}{m.isNew && ' (New)'}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Premium (3 credits)">
+                      {getModelsByTier('premium').map(m => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}{m.isNew && ' (New)'}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Ultra (4 credits)">
+                      {getModelsByTier('ultra').map(m => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}{m.isNew && ' (New)'}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                  <p className="text-sm text-stone-500 mt-1">
+                    {getModelInfo(model).description}
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {/* Fast Tier - 1 Credit */}
-                  <div className="bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-xl p-6 border border-yellow-500/20">
-                    <div className="text-yellow-400 text-2xl mb-3">⚡</div>
-                    <h3 className="text-xl font-bold text-white mb-2">Fast Tier</h3>
-                    <p className="text-gray-300 mb-4">1 credit • Lightning speed</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-400">FLUX Schnell</span>
-                        <span className="text-sm text-yellow-400">~2s</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-400">Nano Banana</span>
-                        <span className="text-sm text-yellow-400">~1s ✨</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Standard Tier - 2 Credits */}
-                  <div className="bg-gradient-to-br from-green-900/20 to-emerald-900/20 rounded-xl p-6 border border-green-500/20">
-                    <div className="text-green-400 text-2xl mb-3">💨</div>
-                    <h3 className="text-xl font-bold text-white mb-2">Standard Tier</h3>
-                    <p className="text-gray-300 mb-4">2 credits • Quality & value</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-400">FLUX Dev</span>
-                        <span className="text-sm text-green-400">Quality</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-400">Ideogram Turbo</span>
-                        <span className="text-sm text-green-400">Text</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-400">Seedream 3.0</span>
-                        <span className="text-sm text-green-400">2K</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Premium Tier - 3 Credits */}
-                  <div className="bg-gradient-to-br from-blue-900/20 to-indigo-900/20 rounded-xl p-6 border border-blue-500/20">
-                    <div className="text-blue-400 text-2xl mb-3">🎨</div>
-                    <h3 className="text-xl font-bold text-white mb-2">Premium Tier</h3>
-                    <p className="text-gray-300 mb-4">3 credits • Professional</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-400">FLUX 1.1 Pro</span>
-                        <span className="text-sm text-blue-400">Fast</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-400">Ideogram v3</span>
-                        <span className="text-sm text-blue-400">Text</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-400">Imagen 4</span>
-                        <span className="text-sm text-blue-400">Google</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-400">DALL-E 3</span>
-                        <span className="text-sm text-blue-400">OpenAI</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-400">Recraft V3</span>
-                        <span className="text-sm text-blue-400">Design ✨</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Ultra Tier - 4 Credits */}
-                  <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-xl p-6 border border-purple-500/20">
-                    <div className="text-purple-400 text-2xl mb-3">👑</div>
-                    <h3 className="text-xl font-bold text-white mb-2">Ultra Tier</h3>
-                    <p className="text-gray-300 mb-4">4 credits • Best quality</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-400">FLUX Ultra</span>
-                        <span className="text-sm text-purple-400">Hi-Res ✨</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-400">Nano Banana Pro</span>
-                        <span className="text-sm text-purple-400">4K ✨</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Get Started Section */}
-            <section id="get-started" className="py-16 bg-white">
-              <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <h2 className="text-4xl font-bold text-stone-900 mb-4">Get Started Free</h2>
-                <p className="text-xl text-stone-600 mb-8">Sign up and start creating amazing AI images today</p>
-
-                {/* Free Credits Banner */}
-                <div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl p-8 mb-8 shadow-lg">
-                  <div className="flex flex-col items-center justify-center">
-                    <span className="text-4xl mb-3">🚀</span>
-                    <div className="font-bold text-2xl mb-2">50 Free Credits for New Users</div>
-                    <div className="text-emerald-100">No credit card required • Start creating right away</div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-2">Aspect Ratio</label>
+                  <div className="flex flex-wrap gap-2">
+                    {availableRatios.map((ratio) => {
+                      const isSupported = getModelInfo(model).supportedRatios.includes(ratio as AspectRatio);
+                      return (
+                        <button
+                          key={ratio}
+                          type="button"
+                          onClick={() => isSupported && setAspectRatio(ratio)}
+                          disabled={!isSupported}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                            aspectRatio === ratio
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                          } ${!isSupported ? 'opacity-40 cursor-not-allowed' : ''}`}
+                        >
+                          {ratio}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-6 mb-8">
-                  <div className="bg-stone-50 rounded-xl p-6 border border-stone-200">
-                    <div className="text-emerald-600 text-2xl mb-2">✓</div>
-                    <div className="font-semibold text-stone-900">Access All Models</div>
-                    <div className="text-sm text-stone-600">9 premium AI image generators</div>
-                  </div>
-                  <div className="bg-stone-50 rounded-xl p-6 border border-stone-200">
-                    <div className="text-emerald-600 text-2xl mb-2">✓</div>
-                    <div className="font-semibold text-stone-900">Multiple Styles</div>
-                    <div className="text-sm text-stone-600">Photorealistic, artistic, logos & more</div>
-                  </div>
-                  <div className="bg-stone-50 rounded-xl p-6 border border-stone-200">
-                    <div className="text-emerald-600 text-2xl mb-2">✓</div>
-                    <div className="font-semibold text-stone-900">Personal Gallery</div>
-                    <div className="text-sm text-stone-600">Save and organize your creations</div>
-                  </div>
-                </div>
-
-                <a
-                  href="#auth"
-                  className="inline-block px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+                <button
+                  type="button"
+                  onClick={handleGenerate}
+                  disabled={imageLoading || !prompt}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Sign Up Free
-                </a>
+                  {imageLoading ? 'Generating...' : 'Generate Image'}
+                </button>
               </div>
-            </section>
+            </div>
 
-            {/* Features Section */}
-            <section id="features" className="py-16">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                    Why Choose Optic Engine?
-                  </h2>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  <div className="text-center">
-                    <div className="bg-blue-500/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl">⚡</span>
-                    </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Blazing Fast</h3>
-                    <p className="text-gray-400">Create images in as little as 0.6 seconds with our Latent Consistency Model.</p>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="bg-green-500/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl">💰</span>
-                    </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Unbeatable Prices</h3>
-                    <p className="text-gray-400">Starting at just 2.5¢ per image - get 40 images for $1 with our ultra-fast models.</p>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="bg-purple-500/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl">🎨</span>
-                    </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Every Style</h3>
-                    <p className="text-gray-400">Anime, photorealistic, artistic, text rendering - we have specialized models for every style.</p>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="bg-orange-500/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl">📐</span>
-                    </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Flexible Ratios</h3>
-                    <p className="text-gray-400">Support for 15+ aspect ratios from square to ultra-wide, perfect for any project.</p>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="bg-red-500/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl">🔧</span>
-                    </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Easy to Use</h3>
-                    <p className="text-gray-400">Simple interface with powerful features. Just type your prompt and choose your model.</p>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="bg-cyan-500/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl">🚀</span>
-                    </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Latest Tech</h3>
-                    <p className="text-gray-400">Access to the newest AI models from FLUX, Ideogram, Google, OpenAI, and more.</p>
+            {imageLoading && (
+              <div className="bg-white rounded-xl border border-stone-200 p-8">
+                <div className="animate-pulse">
+                  <div className="w-full aspect-square bg-stone-100 rounded-lg flex items-center justify-center">
+                    <p className="text-stone-400 text-sm">Generating your image...</p>
                   </div>
                 </div>
               </div>
-            </section>
+            )}
 
-            {/* Use Cases */}
-            <section className="py-16 bg-gray-800/30">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                    Perfect For Every Need
-                  </h2>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-                    <div className="text-2xl mb-3">🎨</div>
-                    <h3 className="text-lg font-semibold text-white mb-2">Artists & Designers</h3>
-                    <p className="text-gray-400 text-sm">Concept art, illustrations, mood boards, and creative exploration.</p>
-                  </div>
-
-                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-                    <div className="text-2xl mb-3">📱</div>
-                    <h3 className="text-lg font-semibold text-white mb-2">Content Creators</h3>
-                    <p className="text-gray-400 text-sm">Social media posts, thumbnails, marketing materials, and brand assets.</p>
-                  </div>
-
-                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-                    <div className="text-2xl mb-3">🏢</div>
-                    <h3 className="text-lg font-semibold text-white mb-2">Businesses</h3>
-                    <p className="text-gray-400 text-sm">Product mockups, presentations, advertising, and professional imagery.</p>
-                  </div>
-
-                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-                    <div className="text-2xl mb-3">🎓</div>
-                    <h3 className="text-lg font-semibold text-white mb-2">Students & Educators</h3>
-                    <p className="text-gray-400 text-sm">Educational materials, research visuals, and learning projects.</p>
-                  </div>
+            {imageUrl && (
+              <div className="bg-white rounded-xl border border-stone-200 p-4">
+                <img src={imageUrl} alt="Generated" className="rounded-lg w-full" />
+                <div className="text-center mt-4">
+                  <a
+                    href={imageUrl}
+                    download="generated-image.webp"
+                    className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                  >
+                    Download Image
+                  </a>
                 </div>
               </div>
-            </section>
-
-            {/* CTA Section */}
-            <section className="py-16">
-              <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-                <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 mb-4">
-                  Ready to Create?
-                </h2>
-                <p className="text-lg text-stone-600 mb-4">
-                  Join thousands of creators already using Optic Engine to bring their visions to life.
-                </p>
-                
-                {/* Free Credits Highlight */}
-                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6 mb-8">
-                  <div className="flex items-center justify-center mb-2">
-                    <span className="text-2xl mr-2">🎁</span>
-                    <h3 className="text-xl font-bold text-emerald-800">New Users Get 50 Free Credits!</h3>
-                  </div>
-                  <p className="text-emerald-700 font-medium">
-                    No credit card required • Start creating immediately • Worth $5-12.50 value
-                  </p>
-                </div>
-                
-                <div id="auth" className="mb-8">
-                  <Auth />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-emerald-600">~1s</div>
-                    <div className="text-sm text-stone-500">Fastest Creation</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-amber-600">40/$1</div>
-                    <div className="text-sm text-stone-500">Best Value</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-rose-600">{getActiveModels().length}</div>
-                    <div className="text-sm text-stone-500">AI Models</div>
-                  </div>
-                </div>
-              </div>
-            </section>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        // LANDING PAGE
+        <div>
+          <Header isLandingPage={true} />
+
+          {/* Hero */}
+          <section className="pt-24 pb-16 px-4">
+            <div className="max-w-3xl mx-auto text-center">
+              <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 mb-4">
+                AI Image Generation
+              </h1>
+              <p className="text-lg text-stone-600 mb-8">
+                Create stunning images with {getActiveModels().length} AI models. Fast, affordable, and easy to use.
+              </p>
+              <a
+                href="#auth"
+                className="inline-block px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors"
+              >
+                Get Started Free
+              </a>
+              <p className="text-sm text-stone-500 mt-3">
+                50 free credits for new users
+              </p>
+            </div>
+          </section>
+
+          {/* Models */}
+          <section id="models" className="py-16 bg-white">
+            <div className="max-w-5xl mx-auto px-4">
+              <h2 className="text-2xl font-bold text-stone-900 mb-8 text-center">
+                Available Models
+              </h2>
+
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="border border-stone-200 rounded-lg p-5">
+                  <div className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">Fast</div>
+                  <div className="text-sm font-medium text-stone-900 mb-1">1 credit</div>
+                  <div className="space-y-1 text-sm text-stone-600">
+                    {getModelsByTier('fast').map(m => (
+                      <div key={m.id}>{m.name}</div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border border-stone-200 rounded-lg p-5">
+                  <div className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">Standard</div>
+                  <div className="text-sm font-medium text-stone-900 mb-1">2 credits</div>
+                  <div className="space-y-1 text-sm text-stone-600">
+                    {getModelsByTier('standard').map(m => (
+                      <div key={m.id}>{m.name}</div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border border-stone-200 rounded-lg p-5">
+                  <div className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">Premium</div>
+                  <div className="text-sm font-medium text-stone-900 mb-1">3 credits</div>
+                  <div className="space-y-1 text-sm text-stone-600">
+                    {getModelsByTier('premium').map(m => (
+                      <div key={m.id}>{m.name}</div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border border-stone-200 rounded-lg p-5">
+                  <div className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">Ultra</div>
+                  <div className="text-sm font-medium text-stone-900 mb-1">4 credits</div>
+                  <div className="space-y-1 text-sm text-stone-600">
+                    {getModelsByTier('ultra').map(m => (
+                      <div key={m.id}>{m.name}</div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Features */}
+          <section id="features" className="py-16">
+            <div className="max-w-5xl mx-auto px-4">
+              <h2 className="text-2xl font-bold text-stone-900 mb-8 text-center">
+                Why Optic Engine
+              </h2>
+
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <h3 className="font-semibold text-stone-900 mb-2">Fast Generation</h3>
+                  <p className="text-sm text-stone-600">Create images in seconds with our optimized models.</p>
+                </div>
+                <div className="text-center">
+                  <h3 className="font-semibold text-stone-900 mb-2">Affordable</h3>
+                  <p className="text-sm text-stone-600">Starting at just a few cents per image.</p>
+                </div>
+                <div className="text-center">
+                  <h3 className="font-semibold text-stone-900 mb-2">Multiple Styles</h3>
+                  <p className="text-sm text-stone-600">Photorealistic, artistic, logos, and more.</p>
+                </div>
+                <div className="text-center">
+                  <h3 className="font-semibold text-stone-900 mb-2">Flexible Sizes</h3>
+                  <p className="text-sm text-stone-600">Support for 15+ aspect ratios.</p>
+                </div>
+                <div className="text-center">
+                  <h3 className="font-semibold text-stone-900 mb-2">Easy to Use</h3>
+                  <p className="text-sm text-stone-600">Simple interface, powerful results.</p>
+                </div>
+                <div className="text-center">
+                  <h3 className="font-semibold text-stone-900 mb-2">Personal Gallery</h3>
+                  <p className="text-sm text-stone-600">All your creations saved and organized.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* CTA */}
+          <section className="py-16 bg-white">
+            <div className="max-w-xl mx-auto px-4 text-center">
+              <h2 className="text-2xl font-bold text-stone-900 mb-2">
+                Start Creating
+              </h2>
+              <p className="text-stone-600 mb-6">
+                Sign up and get 50 free credits to try all our models.
+              </p>
+
+              <div id="auth" className="mb-8">
+                <Auth />
+              </div>
+
+              <div className="flex justify-center gap-8 text-sm">
+                <div>
+                  <div className="font-semibold text-stone-900">50</div>
+                  <div className="text-stone-500">Free Credits</div>
+                </div>
+                <div>
+                  <div className="font-semibold text-stone-900">{getActiveModels().length}</div>
+                  <div className="text-stone-500">AI Models</div>
+                </div>
+                <div>
+                  <div className="font-semibold text-stone-900">15+</div>
+                  <div className="text-stone-500">Aspect Ratios</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   );
 }

@@ -3,7 +3,6 @@
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import Link from 'next/link';
-import Image from 'next/image';
 
 interface HeaderProps {
   credits?: number | null;
@@ -11,29 +10,31 @@ interface HeaderProps {
   isLandingPage?: boolean;
 }
 
+function Logo() {
+  return (
+    <span className="text-xl font-bold tracking-tight text-stone-900">
+      Optic Engine
+    </span>
+  );
+}
+
 export default function Header({ credits, isAdmin, isLandingPage = false }: HeaderProps) {
   const [user] = useAuthState(auth);
 
   if (isLandingPage && !user) {
-    // Landing page header - minimal and elegant
     return (
       <header className="absolute top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-stone-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center">
-              <Image
-                src="/logo.webp"
-                alt="Optic Engine"
-                width={150}
-                height={150}
-                className="rounded-lg"
-              />
-            </div>
-
+          <div className="flex justify-between items-center h-16">
+            <Logo />
             <nav className="hidden md:flex items-center space-x-6">
-              <a href="#features" className="text-stone-600 hover:text-stone-900 transition-colors font-medium">Features</a>
-              <a href="#models" className="text-stone-600 hover:text-stone-900 transition-colors font-medium">Models</a>
-              <a href="#auth" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
+              <a href="#features" className="text-stone-600 hover:text-stone-900 transition-colors text-sm font-medium">
+                Features
+              </a>
+              <a href="#models" className="text-stone-600 hover:text-stone-900 transition-colors text-sm font-medium">
+                Models
+              </a>
+              <a href="#auth" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors">
                 Sign In
               </a>
             </nav>
@@ -44,68 +45,57 @@ export default function Header({ credits, isAdmin, isLandingPage = false }: Head
   }
 
   if (user) {
-    // Logged-in header - full functionality
     return (
-      <header className="bg-white/95 backdrop-blur-sm border-b border-stone-200">
+      <header className="bg-white border-b border-stone-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-              <Image
-                src="/logo.webp"
-                alt="Optic Engine"
-                width={150}
-                height={150}
-                className="rounded-lg"
-              />
+          <div className="flex justify-between items-center h-16">
+            <Link href="/" className="hover:opacity-70 transition-opacity">
+              <Logo />
             </Link>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               {credits !== null && (
-                <div className="px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-xl">
-                  <span className="text-sm font-semibold text-emerald-700">
-                    {credits} credits
-                  </span>
-                </div>
+                <span className="text-sm font-medium text-stone-600">
+                  {credits} credits
+                </span>
               )}
 
               <Link
+                href="/"
+                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Create
+              </Link>
+
+              <Link
+                href="/gallery"
+                className="px-3 py-1.5 text-stone-600 hover:text-stone-900 text-sm font-medium transition-colors"
+              >
+                Gallery
+              </Link>
+
+              <Link
                 href="/account"
-                className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl font-medium transition-colors"
+                className="px-3 py-1.5 text-stone-600 hover:text-stone-900 text-sm font-medium transition-colors"
               >
                 Account
               </Link>
 
-              <nav className="flex items-center space-x-3">
+              {isAdmin && (
                 <Link
-                  href="/"
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                  href="/admin"
+                  className="px-3 py-1.5 text-amber-700 hover:text-amber-800 text-sm font-medium transition-colors"
                 >
-                  Create
+                  Admin
                 </Link>
+              )}
 
-                <Link
-                  href="/gallery"
-                  className="px-4 py-2 bg-stone-50 text-stone-700 font-medium rounded-lg border border-stone-200 hover:bg-stone-100 transition-all duration-200"
-                >
-                  Gallery
-                </Link>
-
-                {isAdmin && (
-                  <Link
-                    href="/admin"
-                    className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-all duration-200"
-                  >
-                    Admin
-                  </Link>
-                )}
-
-                <button
-                  onClick={() => auth.signOut()}
-                  className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-medium rounded-lg transition-all duration-200"
-                >
-                  Sign Out
-                </button>
-              </nav>
+              <button
+                onClick={() => auth.signOut()}
+                className="px-3 py-1.5 text-stone-500 hover:text-stone-700 text-sm transition-colors"
+              >
+                Sign Out
+              </button>
             </div>
           </div>
         </div>
@@ -113,19 +103,12 @@ export default function Header({ credits, isAdmin, isLandingPage = false }: Head
     );
   }
 
-  // Default header for other pages
   return (
     <header className="bg-white border-b border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
-          <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-            <Image
-              src="/logo.webp"
-              alt="Optic Engine"
-              width={150}
-              height={150}
-              className="rounded-lg"
-            />
+        <div className="flex justify-between items-center h-16">
+          <Link href="/" className="hover:opacity-70 transition-opacity">
+            <Logo />
           </Link>
         </div>
       </div>

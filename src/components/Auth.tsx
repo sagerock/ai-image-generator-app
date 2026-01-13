@@ -21,8 +21,7 @@ const Auth = () => {
     try {
       if (isSignUp) {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        
-        // Create user profile with initial credits
+
         try {
           const token = await userCredential.user.getIdToken();
           const response = await fetch('/api/users', {
@@ -37,15 +36,12 @@ const Auth = () => {
               email: userCredential.user.email
             })
           });
-          
+
           if (!response.ok) {
             console.warn('Failed to create user profile, but account was created');
-          } else {
-            console.log('✅ User profile created with free credits');
           }
         } catch (profileError) {
           console.warn('Profile creation failed:', profileError);
-          // Don't fail the signup if profile creation fails
         }
       } else {
         await signInWithEmailAndPassword(auth, email, password);
@@ -57,60 +53,56 @@ const Auth = () => {
     }
   };
 
-  // Show forgot password component if requested
   if (showForgotPassword) {
     return (
-      <ForgotPassword 
-        onBackToLogin={() => setShowForgotPassword(false)} 
+      <ForgotPassword
+        onBackToLogin={() => setShowForgotPassword(false)}
       />
     );
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
-      <div className="text-center mb-8">
-        <div className="text-4xl mb-4">
-          {isSignUp ? '🎨' : '👋'}
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+    <div className="bg-white rounded-xl border border-stone-200 p-6">
+      <div className="text-center mb-6">
+        <h2 className="text-xl font-bold text-stone-900 mb-1">
           {isSignUp ? 'Create Account' : 'Welcome Back'}
         </h2>
-        <p className="text-gray-600 dark:text-gray-300">
-          {isSignUp 
-            ? 'Start with 50 free credits • No card required' 
-            : 'Sign in to continue creating'
+        <p className="text-sm text-stone-600">
+          {isSignUp
+            ? '50 free credits to start'
+            : 'Sign in to continue'
           }
         </p>
       </div>
 
-      <form onSubmit={handleAuth} className="space-y-6">
+      <form onSubmit={handleAuth} className="space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2" htmlFor="email">
-            Email Address
+          <label className="block text-sm font-medium text-stone-700 mb-1" htmlFor="email">
+            Email
           </label>
           <input
             type="email"
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            className="w-full p-3 border border-stone-300 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
             placeholder="your@email.com"
             required
           />
         </div>
 
         <div>
-          <div className="flex justify-between items-center mb-2">
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200" htmlFor="password">
+          <div className="flex justify-between items-center mb-1">
+            <label className="block text-sm font-medium text-stone-700" htmlFor="password">
               Password
             </label>
             {!isSignUp && (
               <button
                 type="button"
                 onClick={() => setShowForgotPassword(true)}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200"
+                className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
               >
-                Forgot Password?
+                Forgot?
               </button>
             )}
           </div>
@@ -119,55 +111,55 @@ const Auth = () => {
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            className="w-full p-3 border border-stone-300 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
             placeholder="••••••••"
             required
           />
         </div>
 
         {error && (
-          <div className="p-4 bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 rounded-xl">
-            <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600 text-sm">{error}</p>
           </div>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95"
+          className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
-            <div className="flex items-center justify-center space-x-2">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              <span>{isSignUp ? 'Creating Account...' : 'Signing In...'}</span>
+            <div className="flex items-center justify-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+              <span>{isSignUp ? 'Creating...' : 'Signing In...'}</span>
             </div>
           ) : (
-            <span>{isSignUp ? '🚀 Create Account' : '✨ Sign In'}</span>
+            <span>{isSignUp ? 'Create Account' : 'Sign In'}</span>
           )}
         </button>
       </form>
 
-      <div className="mt-8 text-center">
-        <div className="relative">
+      <div className="mt-6 text-center">
+        <div className="relative mb-4">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200 dark:border-gray-600"></div>
+            <div className="w-full border-t border-stone-200"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-              {isSignUp ? 'Already have an account?' : "Don't have an account?"}
+            <span className="px-3 bg-white text-stone-500">
+              {isSignUp ? 'Have an account?' : 'Need an account?'}
             </span>
           </div>
         </div>
-        
+
         <button
           onClick={() => setIsSignUp(!isSignUp)}
-          className="mt-4 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold transition-colors duration-200"
+          className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors text-sm"
         >
-          {isSignUp ? 'Sign in instead' : 'Create new account'}
+          {isSignUp ? 'Sign in instead' : 'Create account'}
         </button>
       </div>
     </div>
   );
 };
 
-export default Auth; 
+export default Auth;

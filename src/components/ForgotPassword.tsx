@@ -27,8 +27,7 @@ const ForgotPassword = ({ onBackToLogin }: ForgotPasswordProps) => {
       setShowNotification(true);
     } catch (err: any) {
       console.error('Password reset error:', err);
-      
-      // Handle specific Firebase errors
+
       switch (err.code) {
         case 'auth/user-not-found':
           setError('No account found with this email address.');
@@ -56,42 +55,35 @@ const ForgotPassword = ({ onBackToLogin }: ForgotPasswordProps) => {
           show={showNotification}
           onClose={() => setShowNotification(false)}
         />
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
-        <div className="text-center">
-          <div className="text-6xl mb-6">📧</div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-            Check Your Email
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            We've sent a password reset link to:
-          </p>
-          <p className="text-blue-600 dark:text-blue-400 font-semibold mb-6">
-            {email}
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-            Click the link in the email to reset your password. If you don't see it, check your spam folder.
-          </p>
-          
-          <div className="space-y-4">
-            <button
-              onClick={() => {
-                setSuccess(false);
-                setEmail('');
-              }}
-              className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
-            >
-              Send Another Email
-            </button>
-            
-            <button
-              onClick={onBackToLogin}
-              className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-xl transition-all duration-200"
-            >
-              Back to Sign In
-            </button>
+        <div className="bg-white rounded-xl border border-stone-200 p-6">
+          <div className="text-center">
+            <h2 className="text-xl font-bold text-stone-900 mb-2">Check Your Email</h2>
+            <p className="text-stone-600 mb-4">We've sent a password reset link to:</p>
+            <p className="text-emerald-600 font-semibold mb-4">{email}</p>
+            <p className="text-sm text-stone-500 mb-6">
+              Click the link in the email to reset your password. Check your spam folder if you don't see it.
+            </p>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setSuccess(false);
+                  setEmail('');
+                }}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors"
+              >
+                Send Another Email
+              </button>
+
+              <button
+                onClick={onBackToLogin}
+                className="w-full py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium rounded-lg transition-colors"
+              >
+                Back to Sign In
+              </button>
+            </div>
           </div>
         </div>
-      </div>
       </>
     );
   }
@@ -104,77 +96,72 @@ const ForgotPassword = ({ onBackToLogin }: ForgotPasswordProps) => {
         show={!!error}
         onClose={() => setError(null)}
       />
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
-      <div className="text-center mb-8">
-        <div className="text-4xl mb-4">🔑</div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          Reset Your Password
-        </h2>
-        <p className="text-gray-600 dark:text-gray-300">
-          Enter your email address and we'll send you a reset link
-        </p>
-      </div>
-
-      <form onSubmit={handleResetPassword} className="space-y-6">
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2" htmlFor="email">
-            Email Address
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-            placeholder="your@email.com"
-            required
-          />
+      <div className="bg-white rounded-xl border border-stone-200 p-6">
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-bold text-stone-900 mb-1">Reset Password</h2>
+          <p className="text-sm text-stone-600">
+            Enter your email and we'll send you a reset link
+          </p>
         </div>
 
-        {error && (
-          <div className="p-4 bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 rounded-xl">
-            <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
+        <form onSubmit={handleResetPassword} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-stone-700 mb-1" htmlFor="email">
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 border border-stone-300 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+              placeholder="your@email.com"
+              required
+            />
           </div>
-        )}
 
-        <button
-          type="submit"
-          disabled={loading || !email.trim()}
-          className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95"
-        >
-          {loading ? (
-            <div className="flex items-center justify-center space-x-2">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              <span>Sending Reset Email...</span>
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">{error}</p>
             </div>
-          ) : (
-            <span>🚀 Send Reset Email</span>
           )}
-        </button>
-      </form>
 
-      <div className="mt-8 text-center">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200 dark:border-gray-600"></div>
+          <button
+            type="submit"
+            disabled={loading || !email.trim()}
+            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                <span>Sending...</span>
+              </div>
+            ) : (
+              <span>Send Reset Email</span>
+            )}
+          </button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <div className="relative mb-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-stone-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-3 bg-white text-stone-500">Remember your password?</span>
+            </div>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-              Remember your password?
-            </span>
-          </div>
+
+          <button
+            onClick={onBackToLogin}
+            className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors text-sm"
+          >
+            Back to Sign In
+          </button>
         </div>
-        
-        <button
-          onClick={onBackToLogin}
-          className="mt-4 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold transition-colors duration-200"
-        >
-          Back to Sign In
-        </button>
       </div>
-    </div>
     </>
   );
 };
 
-export default ForgotPassword; 
+export default ForgotPassword;

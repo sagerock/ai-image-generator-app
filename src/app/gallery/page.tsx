@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { auth } from '@/lib/firebase';
 import Link from 'next/link';
 import Header from '@/components/Header';
 
@@ -25,7 +24,6 @@ export default function Gallery() {
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
   const [imageDimensions, setImageDimensions] = useState<Record<string, { width: number; height: number }>>({});
 
-  // Fetch user's images
   useEffect(() => {
     const fetchImages = async () => {
       if (!user) {
@@ -63,10 +61,10 @@ export default function Gallery() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <main className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">Loading gallery...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-stone-300 border-t-stone-600 mx-auto mb-4"></div>
+          <p className="text-stone-500 text-sm">Loading...</p>
         </div>
       </main>
     );
@@ -74,20 +72,15 @@ export default function Gallery() {
 
   if (!user) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <main className="min-h-screen flex items-center justify-center bg-stone-50">
         <div className="text-center max-w-md mx-auto px-4">
-          <div className="text-6xl mb-6">🔒</div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-            Access Denied
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-8">
-            You need to be signed in to view your gallery.
-          </p>
+          <h1 className="text-2xl font-bold text-stone-900 mb-2">Sign In Required</h1>
+          <p className="text-stone-600 mb-6">You need to be signed in to view your gallery.</p>
           <Link
             href="/"
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+            className="inline-block px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors"
           >
-            ← Back to Home
+            Back to Home
           </Link>
         </div>
       </main>
@@ -103,9 +96,8 @@ export default function Gallery() {
     });
   };
 
-  // Load image dimensions
   const loadImageDimensions = (imageUrl: string, imageId: string) => {
-    if (imageDimensions[imageId]) return; // Already loaded
+    if (imageDimensions[imageId]) return;
 
     const img = new Image();
     img.onload = () => {
@@ -117,165 +109,119 @@ export default function Gallery() {
     img.src = imageUrl;
   };
 
-  // Download image function
   const downloadImage = (imageUrl: string, prompt: string, model: string) => {
     try {
-      // Create a clean filename
       const cleanPrompt = prompt.slice(0, 30).replace(/[^a-zA-Z0-9]/g, '_');
       const filename = `${model}_${cleanPrompt}.webp`;
-      
-      // Use a simple link download approach that works with Firebase Storage
+
       const link = document.createElement('a');
       link.href = imageUrl;
       link.download = filename;
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
-      
-      // Temporarily add to DOM and click
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (error) {
       console.error('Failed to download image:', error);
-      // Fallback: open in new tab
       window.open(imageUrl, '_blank');
     }
   };
 
-  // Close modal function
   const closeModal = () => {
     setSelectedImage(null);
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+    <main className="min-h-screen bg-stone-50">
       <Header />
-      <div className="container mx-auto px-4 py-8">
-        {/* Gallery Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            Your Gallery
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {imagesLoading 
-              ? 'Loading your AI-generated masterpieces...' 
-              : `${images.length} AI-generated masterpiece${images.length !== 1 ? 's' : ''}`
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-stone-900 mb-2">Gallery</h1>
+          <p className="text-stone-600">
+            {imagesLoading
+              ? 'Loading your images...'
+              : `${images.length} image${images.length !== 1 ? 's' : ''}`
             }
           </p>
         </div>
 
-        {/* Gallery Content */}
         {imagesLoading ? (
           <div className="text-center py-16">
-            <div className="animate-pulse mb-6">
-              <div className="w-24 h-24 bg-blue-200 dark:bg-blue-800 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <div className="text-2xl">🎨</div>
-              </div>
-            </div>
-            <p className="text-gray-600 dark:text-gray-300 font-medium">
-              Loading your images...
-            </p>
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-stone-300 border-t-stone-600 mx-auto mb-4"></div>
+            <p className="text-stone-500 text-sm">Loading your images...</p>
           </div>
         ) : error ? (
           <div className="text-center py-16">
-            <div className="text-6xl mb-6">⚠️</div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              Something went wrong
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto">
-              {error}
-            </p>
+            <h2 className="text-xl font-semibold text-stone-900 mb-2">Something went wrong</h2>
+            <p className="text-stone-600 mb-6 max-w-md mx-auto">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors"
             >
-              🔄 Try Again
+              Try Again
             </button>
           </div>
         ) : images.length === 0 ? (
           <div className="text-center py-16">
-            <div className="text-8xl mb-6">🎨</div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              No images yet
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto">
-              Start creating amazing AI-generated images and they'll appear here in your personal gallery.
+            <h2 className="text-xl font-semibold text-stone-900 mb-2">No images yet</h2>
+            <p className="text-stone-600 mb-6 max-w-md mx-auto">
+              Start creating AI-generated images and they'll appear here.
             </p>
             <Link
               href="/"
-              className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="inline-block px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors"
             >
-              ✨ Create Your First Image
+              Create Your First Image
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {images.map((image) => {
               const dimensions = imageDimensions[image.id];
-              
+
               return (
-                <div 
-                  key={image.id} 
-                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                <div
+                  key={image.id}
+                  className="bg-white rounded-xl border border-stone-200 overflow-hidden group"
                 >
-                  <div 
-                    className="aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 cursor-pointer relative"
+                  <div
+                    className="aspect-square overflow-hidden bg-stone-100 cursor-pointer relative"
                     onClick={() => setSelectedImage(image)}
                   >
                     <img
                       src={image.imageUrl}
                       alt={image.prompt}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                       onLoad={() => loadImageDimensions(image.imageUrl, image.id)}
                     />
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                      <div className="text-white opacity-0 group-hover:opacity-100 transition-all duration-300 text-sm font-medium">
-                        Click to view full size
-                      </div>
-                    </div>
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                   </div>
                   <div className="p-4">
-                    <p className="text-gray-800 dark:text-gray-200 text-sm font-medium line-clamp-3 mb-3">
-                      "{image.prompt}"
+                    <p className="text-stone-700 text-sm line-clamp-2 mb-3">
+                      {image.prompt}
                     </p>
-                    <div className="space-y-2">
-                      {/* Model and Date */}
-                      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg font-medium">
-                          {image.model.toUpperCase()}
-                        </span>
-                        <span>{formatDate(image.createdAt)}</span>
-                      </div>
-                      
-                      {/* Dimensions and Download */}
-                      <div className="flex items-center justify-between">
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {dimensions ? (
-                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                              {dimensions.width} × {dimensions.height}
-                            </span>
-                          ) : (
-                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse">
-                              Loading...
-                            </span>
-                          )}
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            downloadImage(image.imageUrl, image.prompt, image.model);
-                          }}
-                          className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-                          title="Download image"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          <span>Download</span>
-                        </button>
-                      </div>
+                    <div className="flex items-center justify-between text-xs text-stone-500">
+                      <span className="px-2 py-1 bg-stone-100 text-stone-600 rounded font-medium">
+                        {image.model}
+                      </span>
+                      <span>{formatDate(image.createdAt)}</span>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-xs text-stone-400">
+                        {dimensions ? `${dimensions.width}×${dimensions.height}` : '...'}
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          downloadImage(image.imageUrl, image.prompt, image.model);
+                        }}
+                        className="text-xs text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+                      >
+                        Download
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -283,74 +229,52 @@ export default function Gallery() {
             })}
           </div>
         )}
-
-        {/* Footer Info */}
-        {images.length > 0 && (
-          <div className="mt-16 text-center">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 max-w-2xl mx-auto">
-              <div className="text-3xl mb-4">🎉</div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                Your Creative Journey
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                You've created {images.length} unique AI-generated image{images.length !== 1 ? 's' : ''}! 
-                Each one is stored securely in your personal gallery.
-              </p>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Full-size Image Modal */}
+      {/* Modal */}
       {selectedImage && (
-        <div 
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        <div
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
           onClick={closeModal}
         >
-          <div className="relative max-w-7xl max-h-full w-full h-full flex items-center justify-center">
-            {/* Close button */}
+          <div className="relative max-w-5xl max-h-full w-full h-full flex items-center justify-center">
             <button
               onClick={closeModal}
-              className="absolute top-4 right-4 z-10 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-all duration-200 backdrop-blur-sm"
-              title="Close"
+              className="absolute top-4 right-4 z-10 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
 
-            {/* Download button */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 downloadImage(selectedImage.imageUrl, selectedImage.prompt, selectedImage.model);
               }}
-              className="absolute top-4 right-16 z-10 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-all duration-200 backdrop-blur-sm"
-              title="Download"
+              className="absolute top-4 right-14 z-10 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
             </button>
 
-            {/* Image */}
             <div className="relative max-w-full max-h-full" onClick={(e) => e.stopPropagation()}>
               <img
                 src={selectedImage.imageUrl}
                 alt={selectedImage.prompt}
-                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                className="max-w-full max-h-[85vh] object-contain rounded-lg"
               />
-              
-              {/* Image info overlay */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-6 rounded-b-lg">
-                                            <p className="text-lg font-medium mb-2">&quot;{selectedImage.prompt}&quot;</p>
-                <div className="flex items-center justify-between text-sm opacity-90">
-                  <div className="flex items-center space-x-4">
-                    <span className="px-3 py-1 bg-white/20 rounded-full">
-                      {selectedImage.model.toUpperCase()}
+
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-4 rounded-b-lg">
+                <p className="text-sm font-medium mb-2">{selectedImage.prompt}</p>
+                <div className="flex items-center justify-between text-xs opacity-80">
+                  <div className="flex items-center gap-3">
+                    <span className="px-2 py-1 bg-white/20 rounded">
+                      {selectedImage.model}
                     </span>
                     {imageDimensions[selectedImage.id] && (
-                      <span className="px-3 py-1 bg-white/20 rounded-full">
+                      <span>
                         {imageDimensions[selectedImage.id].width} × {imageDimensions[selectedImage.id].height}
                       </span>
                     )}
@@ -364,4 +288,4 @@ export default function Gallery() {
       )}
     </main>
   );
-} 
+}
