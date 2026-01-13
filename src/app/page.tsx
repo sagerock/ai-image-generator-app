@@ -426,112 +426,45 @@ export default function Home() {
               </div>
             </section>
 
-            {/* Pricing Section */}
-            <section id="pricing" className="py-16 bg-white">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-16">
-                  <h2 className="text-4xl font-bold text-stone-900 mb-4">Simple, Transparent Pricing</h2>
-                  <p className="text-xl text-stone-600 mb-8">Choose the plan that works best for you</p>
-                  
-                  {/* Free Credits Banner */}
-                  <div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl p-6 mb-8 max-w-2xl mx-auto shadow-lg">
-                    <div className="flex items-center justify-center">
-                      <span className="text-3xl mr-3">🚀</span>
-                      <div>
-                        <div className="font-bold text-xl">All New Users Get 50 Free Credits!</div>
-                        <div className="text-emerald-100 text-sm mt-1">No credit card required • Start creating right away • Worth up to $12.50</div>
-                      </div>
-                    </div>
+            {/* Get Started Section */}
+            <section id="get-started" className="py-16 bg-white">
+              <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 className="text-4xl font-bold text-stone-900 mb-4">Get Started Free</h2>
+                <p className="text-xl text-stone-600 mb-8">Sign up and start creating amazing AI images today</p>
+
+                {/* Free Credits Banner */}
+                <div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl p-8 mb-8 shadow-lg">
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-4xl mb-3">🚀</span>
+                    <div className="font-bold text-2xl mb-2">50 Free Credits for New Users</div>
+                    <div className="text-emerald-100">No credit card required • Start creating right away</div>
                   </div>
                 </div>
 
-                <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
-                  {/* Monthly Subscription */}
-                  <div className="bg-white rounded-2xl shadow-xl border-2 border-emerald-200 relative overflow-hidden">
-                    <div className="absolute top-0 left-0 right-0 bg-emerald-600 text-white text-center py-2 text-sm font-semibold">
-                      ⭐ Most Popular
-                    </div>
-                    <div className="p-8 pt-16">
-                      <div className="text-center mb-8">
-                        <h3 className="text-2xl font-bold text-stone-900 mb-2">Monthly Plan</h3>
-                        <div className="text-4xl font-bold text-emerald-600 mb-2">$10<span className="text-lg text-stone-600">/month</span></div>
-                        <p className="text-stone-600">400 credits per month</p>
-                      </div>
-                      
-                      <div className="space-y-4 mb-8">
-                        <div className="flex items-center">
-                          <div className="text-emerald-600 mr-3">✅</div>
-                          <span className="text-stone-700">400 credits every month</span>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="text-emerald-600 mr-3">✅</div>
-                          <span className="text-stone-700">Unused credits roll over</span>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="text-emerald-600 mr-3">✅</div>
-                          <span className="text-stone-700">Access to all 12 AI models</span>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="text-emerald-600 mr-3">✅</div>
-                          <span className="text-stone-700">Cancel anytime</span>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="text-emerald-600 mr-3">✅</div>
-                          <span className="text-stone-700">Priority support</span>
-                        </div>
-                      </div>
-                      
-                      <div className="text-center">
-                        <div className="text-sm text-stone-500 mb-4">Best value for regular users</div>
-                      </div>
-                    </div>
+                <div className="grid md:grid-cols-3 gap-6 mb-8">
+                  <div className="bg-stone-50 rounded-xl p-6 border border-stone-200">
+                    <div className="text-emerald-600 text-2xl mb-2">✓</div>
+                    <div className="font-semibold text-stone-900">Access All Models</div>
+                    <div className="text-sm text-stone-600">9 premium AI image generators</div>
                   </div>
-
-                  {/* Credit Packages */}
-                  <div className="bg-white rounded-2xl shadow-lg border border-stone-200">
-                    <div className="p-8">
-                      <div className="text-center mb-8">
-                        <h3 className="text-2xl font-bold text-stone-900 mb-2">Pay As You Go</h3>
-                        <p className="text-stone-600">Buy credits when you need them</p>
-                      </div>
-                      
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center p-4 bg-stone-50 rounded-lg">
-                          <div>
-                            <div className="font-semibold text-stone-900">100 Credits</div>
-                            <div className="text-sm text-stone-600">Perfect for casual use</div>
-                          </div>
-                          <div className="text-xl font-bold text-stone-900">$10</div>
-                        </div>
-                        
-                        <div className="flex justify-between items-center p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                          <div>
-                            <div className="font-semibold text-stone-900">250 Credits</div>
-                            <div className="text-sm text-emerald-600">20% savings</div>
-                          </div>
-                          <div className="text-xl font-bold text-emerald-600">$20</div>
-                        </div>
-                        
-                        <div className="flex justify-between items-center p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                          <div>
-                            <div className="font-semibold text-stone-900">500 Credits</div>
-                            <div className="text-sm text-emerald-600">30% savings</div>
-                          </div>
-                          <div className="text-xl font-bold text-emerald-600">$35</div>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-6 text-center">
-                        <div className="text-sm text-stone-500">No expiration • Use anytime</div>
-                      </div>
-                    </div>
+                  <div className="bg-stone-50 rounded-xl p-6 border border-stone-200">
+                    <div className="text-emerald-600 text-2xl mb-2">✓</div>
+                    <div className="font-semibold text-stone-900">Multiple Styles</div>
+                    <div className="text-sm text-stone-600">Photorealistic, artistic, logos & more</div>
+                  </div>
+                  <div className="bg-stone-50 rounded-xl p-6 border border-stone-200">
+                    <div className="text-emerald-600 text-2xl mb-2">✓</div>
+                    <div className="font-semibold text-stone-900">Personal Gallery</div>
+                    <div className="text-sm text-stone-600">Save and organize your creations</div>
                   </div>
                 </div>
 
-                <div className="text-center mt-12">
-                  <p className="text-stone-600 mb-4">All plans include access to our complete suite of AI models</p>
-                  <p className="text-sm text-stone-500">💳 Secure payments powered by Stripe • Cancel anytime</p>
-                </div>
+                <a
+                  href="#auth"
+                  className="inline-block px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
+                  Sign Up Free
+                </a>
               </div>
             </section>
 

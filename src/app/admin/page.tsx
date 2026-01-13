@@ -290,18 +290,30 @@ const AdminDashboard = () => {
                       </td>
                       <td className="px-6 py-4 text-sm">
                         {editingUserId !== userData.id && (
-                          <div className="flex space-x-2">
+                          <div className="flex flex-wrap gap-2">
                             <button
                               onClick={() => startEditing(userData.id, userData.credits)}
                               className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded transition-colors"
                             >
-                              Edit Credits
+                              Edit
                             </button>
                             <button
-                              onClick={() => updateUserCredits(userData.id, userData.credits + 10)}
-                              className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded transition-colors"
+                              onClick={() => updateUserCredits(userData.id, userData.credits + 50)}
+                              className="px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs rounded transition-colors"
                             >
-                              +10 Credits
+                              +50
+                            </button>
+                            <button
+                              onClick={() => updateUserCredits(userData.id, userData.credits + 100)}
+                              className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded transition-colors"
+                            >
+                              +100
+                            </button>
+                            <button
+                              onClick={() => updateUserCredits(userData.id, userData.credits + 500)}
+                              className="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white text-xs rounded transition-colors"
+                            >
+                              +500
                             </button>
                           </div>
                         )}

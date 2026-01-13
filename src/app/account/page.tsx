@@ -4,18 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import Header from '@/components/Header';
-import SubscriptionManager from '@/components/SubscriptionManager';
-import SubscriptionInfo from '@/components/SubscriptionInfo';
-import PaymentModal from '@/components/PaymentModal';
 
 export default function AccountPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [credits, setCredits] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -59,26 +54,6 @@ export default function AccountPage() {
     fetchUserInfo();
   }, [user]);
 
-  // Fetch subscription status
-  useEffect(() => {
-    const fetchStatus = async () => {
-      if (!user) return;
-      try {
-        const token = await user.getIdToken();
-        const response = await fetch('/api/subscription-status', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setSubscriptionStatus(data.status);
-        }
-      } catch {}
-    };
-    fetchStatus();
-  }, [user]);
-
   if (authLoading || loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-white">
@@ -97,11 +72,11 @@ export default function AccountPage() {
   return (
     <main className="min-h-screen bg-stone-50">
       <Header credits={credits} isAdmin={isAdmin} />
-      
+
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-stone-900 mb-2">Account Settings</h1>
-          <p className="text-stone-600">Manage your subscription, credits, and account preferences</p>
+          <h1 className="text-3xl font-bold text-stone-900 mb-2">Account</h1>
+          <p className="text-stone-600">Your account information</p>
         </div>
 
         <div className="grid gap-6">
@@ -111,7 +86,7 @@ export default function AccountPage() {
               <h2 className="text-xl font-semibold text-stone-900">Account Overview</h2>
               <span className="text-2xl">👤</span>
             </div>
-            
+
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <div className="text-sm text-stone-500 mb-1">Email</div>
@@ -120,67 +95,11 @@ export default function AccountPage() {
               <div>
                 <div className="text-sm text-stone-500 mb-1">Credits Balance</div>
                 <div className="font-bold text-2xl text-emerald-600">
-                  💳 {credits !== null ? credits : '...'} credits
+                  {credits !== null ? credits : '...'} credits
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Credits Management */}
-          <div className="bg-white rounded-xl border border-stone-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-stone-900">Credits & Billing</h2>
-              <span className="text-2xl">💳</span>
-            </div>
-            
-            <div className="space-y-4">
-              <p className="text-stone-600">
-                Purchase more credits or subscribe to our monthly plan for the best value.
-              </p>
-              
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowPaymentModal(true)}
-                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors"
-                >
-                  Get More Credits
-                </button>
-                
-                <button
-                  onClick={async () => {
-                    if (!user) return;
-                    try {
-                      const token = await user.getIdToken();
-                      const response = await fetch('/api/fix-subscription', {
-                        method: 'POST',
-                        headers: {
-                          'Authorization': `Bearer ${token}`
-                        }
-                      });
-                      
-                      if (response.ok) {
-                        const result = await response.json();
-                        alert(`Success! ${result.message}. Added ${result.creditsAdded} credits.`);
-                        window.location.reload();
-                      } else {
-                        const error = await response.json();
-                        alert(`Error: ${error.error}`);
-                      }
-                    } catch (error) {
-                      alert('Failed to fix subscription. Please try again.');
-                    }
-                  }}
-                  className={`px-6 py-3 ${subscriptionStatus ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-xl font-medium transition-colors`}
-                  disabled={Boolean(subscriptionStatus)}
-                >
-                  🔧 Fix Subscription
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Subscription Management */}
-          <SubscriptionInfo />
 
           {/* Quick Actions */}
           <div className="bg-white rounded-xl border border-stone-200 p-6">
@@ -188,32 +107,27 @@ export default function AccountPage() {
               <h2 className="text-xl font-semibold text-stone-900">Quick Actions</h2>
               <span className="text-2xl">⚡</span>
             </div>
-            
+
             <div className="grid md:grid-cols-2 gap-4">
               <button
                 onClick={() => router.push('/')}
                 className="p-4 bg-stone-50 hover:bg-stone-100 rounded-lg border border-stone-200 transition-colors text-left"
               >
-                <div className="font-medium text-stone-900 mb-1">🎨 Create Images</div>
+                <div className="font-medium text-stone-900 mb-1">Create Images</div>
                 <div className="text-sm text-stone-600">Start generating AI art</div>
               </button>
-              
+
               <button
                 onClick={() => router.push('/gallery')}
                 className="p-4 bg-stone-50 hover:bg-stone-100 rounded-lg border border-stone-200 transition-colors text-left"
               >
-                <div className="font-medium text-stone-900 mb-1">🖼️ View Gallery</div>
+                <div className="font-medium text-stone-900 mb-1">View Gallery</div>
                 <div className="text-sm text-stone-600">Browse your creations</div>
               </button>
             </div>
           </div>
         </div>
       </div>
-
-      <PaymentModal 
-        isOpen={showPaymentModal} 
-        onClose={() => setShowPaymentModal(false)} 
-      />
     </main>
   );
-} 
+}
