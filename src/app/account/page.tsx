@@ -97,6 +97,14 @@ export default function AccountPage() {
                 <div className="font-bold text-2xl text-emerald-600">
                   {credits !== null ? credits : '...'} credits
                 </div>
+                {credits !== null && credits < 10 && (
+                  <div className="mt-2 text-sm text-stone-600">
+                    Need more credits? Email{' '}
+                    <a href="mailto:sage@sagerock.com" className="text-emerald-600 hover:text-emerald-700 underline">
+                      sage@sagerock.com
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>

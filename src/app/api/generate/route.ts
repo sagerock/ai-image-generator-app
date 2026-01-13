@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     if (currentCredits < model.credits) {
       return NextResponse.json({
         error: 'Insufficient credits',
-        message: `You need ${model.credits} credits to generate an image with ${model.name}. You currently have ${currentCredits} credits.`,
+        message: `You need ${model.credits} credits to generate an image with ${model.name}. You currently have ${currentCredits} credits. Email sage@sagerock.com to get more credits.`,
         credits: currentCredits
       }, { status: 402 });
     }
