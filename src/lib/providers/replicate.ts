@@ -89,10 +89,17 @@ export class ReplicateProvider implements ImageProvider {
     // Build input parameters for image editing
     const input: Record<string, unknown> = {
       prompt,
-      image: imageUrl,
-      prompt_strength: strength,
       ...model.defaultParams,
     };
+
+    // Different models use different parameter names for input image
+    // FLUX Kontext uses 'input_image', most others use 'image'
+    if (model.providerModelId.includes('flux-kontext')) {
+      input.input_image = imageUrl;
+    } else {
+      input.image = imageUrl;
+      input.prompt_strength = strength;
+    }
 
     // Add dimension parameters based on model's dimension type
     if (model.dimensionType === 'aspect_ratio') {
