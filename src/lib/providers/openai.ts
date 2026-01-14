@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import OpenAI, { toFile } from 'openai';
 import { ImageProvider, GenerationRequest, GenerationResult, EditRequest } from './types';
 import { getGptImageSize } from '../models/dimensions';
 
@@ -72,14 +72,17 @@ export class OpenAIProvider implements ImageProvider {
       imageBase64 = Buffer.from(buffer).toString('base64');
     }
 
-    // GPT Image models support editing via the generate endpoint with image input
-    // We pass the image as a base64-encoded data URL in the prompt context
+    // GPT Image models support editing via the edit endpoint with image input
     const editPrompt = `Edit this image: ${prompt}`;
+
+    // Convert base64 to a file-like object using OpenAI's toFile helper
+    const imageBuffer = Buffer.from(imageBase64, 'base64');
+    const imageFile = await toFile(imageBuffer, 'source.png', { type: 'image/png' });
 
     const response = await this.client.images.edit({
       model: modelId,
       prompt: editPrompt,
-      image: await this.base64ToFile(imageBase64, 'source.png'),
+      image: imageFile,
       n: 1,
       size: size === 'auto' ? '1024x1024' : size,
     });
@@ -102,11 +105,5 @@ export class OpenAIProvider implements ImageProvider {
 
     console.log(`✅ ${model.name} edit complete`);
     return { imageUrl: resultUrl, rawOutput: response };
-  }
-
-  private async base64ToFile(base64: string, filename: string): Promise<File> {
-    const buffer = Buffer.from(base64, 'base64');
-    const blob = new Blob([buffer], { type: 'image/png' });
-    return new File([blob], filename, { type: 'image/png' });
   }
 }
