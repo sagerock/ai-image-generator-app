@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { ImageProvider, GenerationRequest, GenerationResult } from './types';
+import { ImageProvider, GenerationRequest, GenerationResult, EditRequest } from './types';
 import { getGptImageSize } from '../models/dimensions';
 
 type ImageQuality = 'auto' | 'high' | 'low' | 'medium';
@@ -52,5 +52,61 @@ export class OpenAIProvider implements ImageProvider {
 
     console.log(`✅ ${model.name} generation complete`);
     return { imageUrl, rawOutput: response };
+  }
+
+  async edit(request: EditRequest): Promise<GenerationResult> {
+    const { prompt, model, aspectRatio, imageUrl } = request;
+    const modelId = model.providerModelId;
+    const size = getGptImageSize(aspectRatio) as GptImageSize;
+    const quality = (model.defaultParams?.quality as ImageQuality) || 'auto';
+
+    console.log(`🎨 Editing with ${model.name} (${modelId}), size: ${size}, quality: ${quality}`);
+
+    // Download the source image and convert to base64
+    let imageBase64: string;
+    if (imageUrl.startsWith('data:')) {
+      imageBase64 = imageUrl.split(',')[1];
+    } else {
+      const response = await fetch(imageUrl);
+      const buffer = await response.arrayBuffer();
+      imageBase64 = Buffer.from(buffer).toString('base64');
+    }
+
+    // GPT Image models support editing via the generate endpoint with image input
+    // We pass the image as a base64-encoded data URL in the prompt context
+    const editPrompt = `Edit this image: ${prompt}`;
+
+    const response = await this.client.images.edit({
+      model: modelId,
+      prompt: editPrompt,
+      image: await this.base64ToFile(imageBase64, 'source.png'),
+      n: 1,
+      size: size === 'auto' ? '1024x1024' : size,
+    });
+
+    const imageData = response.data?.[0];
+
+    if (!imageData) {
+      console.error('❌ No image in edit response:', JSON.stringify(response, null, 2));
+      throw new Error('No image returned from OpenAI edit');
+    }
+
+    let resultUrl: string;
+    if (imageData.b64_json) {
+      resultUrl = `data:image/png;base64,${imageData.b64_json}`;
+    } else if (imageData.url) {
+      resultUrl = imageData.url;
+    } else {
+      throw new Error('No image URL or base64 data returned from OpenAI edit');
+    }
+
+    console.log(`✅ ${model.name} edit complete`);
+    return { imageUrl: resultUrl, rawOutput: response };
+  }
+
+  private async base64ToFile(base64: string, filename: string): Promise<File> {
+    const buffer = Buffer.from(base64, 'base64');
+    const blob = new Blob([buffer], { type: 'image/png' });
+    return new File([blob], filename, { type: 'image/png' });
   }
 }
