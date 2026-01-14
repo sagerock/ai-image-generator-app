@@ -52,6 +52,23 @@ export const MODEL_REGISTRY: Record<string, ModelConfig> = {
     isActive: false,
   },
 
+  'flux-kontext-edit': {
+    id: 'flux-kontext-edit',
+    name: 'FLUX Kontext (Edit)',
+    provider: 'replicate',
+    providerModelId: 'black-forest-labs/flux-kontext-dev',
+    credits: 2,
+    tier: 'standard',
+    description: 'Edit images with text prompts - describe what you want to change',
+    supportedRatios: ['1:1', '16:9', '4:3', '3:4', '9:16'],
+    dimensionType: 'aspect_ratio',
+    defaultParams: { output_format: 'webp', output_quality: 90 },
+    tags: ['editing', 'img2img'],
+    estimatedTime: '~8s',
+    isActive: true,
+    isNew: true,
+  },
+
   'ideogram-turbo': {
     id: 'ideogram-turbo',
     name: 'Ideogram v2a Turbo',
@@ -336,6 +353,11 @@ export function getAllSupportedRatios(): AspectRatio[] {
     m.supportedRatios.forEach(r => ratioSet.add(r));
   });
   return Array.from(ratioSet);
+}
+
+// Get models that support image editing
+export function getEditingModels(): ModelConfig[] {
+  return getActiveModels().filter(m => m.tags?.includes('editing'));
 }
 
 // Re-export types

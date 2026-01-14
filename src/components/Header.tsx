@@ -70,6 +70,13 @@ export default function Header({ credits, isAdmin, isLandingPage = false }: Head
               </Link>
 
               <Link
+                href="/edit"
+                className="px-3 py-1.5 text-stone-600 hover:text-stone-900 text-sm font-medium transition-colors"
+              >
+                Edit
+              </Link>
+
+              <Link
                 href="/gallery"
                 className="px-3 py-1.5 text-stone-600 hover:text-stone-900 text-sm font-medium transition-colors"
               >
