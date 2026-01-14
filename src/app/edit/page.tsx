@@ -48,6 +48,24 @@ function detectAspectRatio(width: number, height: number): AspectRatio {
   return closest.ratio;
 }
 
+// Detect aspect ratio from image URL (returns Promise)
+function detectAspectRatioFromUrl(imageUrl: string): Promise<AspectRatio> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const detected = detectAspectRatio(img.naturalWidth, img.naturalHeight);
+      console.log(`Detected aspect ratio: ${detected} (${img.naturalWidth}x${img.naturalHeight})`);
+      resolve(detected);
+    };
+    img.onerror = () => {
+      console.warn('Failed to load image for aspect ratio detection, using 1:1');
+      resolve('1:1');
+    };
+    img.src = imageUrl;
+  });
+}
+
 export default function EditPage() {
   const { user, loading: authLoading } = useAuth();
   const [sourceTab, setSourceTab] = useState<'upload' | 'gallery'>('upload');
@@ -202,6 +220,10 @@ export default function EditPage() {
     setNotification(null);
 
     try {
+      // Detect aspect ratio from source image to ensure correct output dimensions
+      const detectedRatio = await detectAspectRatioFromUrl(sourceImageUrl);
+      setAspectRatio(detectedRatio); // Update UI to show detected ratio
+
       const idToken = await user.getIdToken();
       const response = await fetch('/api/edit', {
         method: 'POST',
@@ -210,7 +232,7 @@ export default function EditPage() {
           prompt,
           model,
           idToken,
-          aspectRatio,
+          aspectRatio: detectedRatio,
           imageUrl: sourceImageUrl,
           strength,
           sourceImageId: selectedGalleryImage?.id || null,
