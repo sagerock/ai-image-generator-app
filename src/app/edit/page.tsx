@@ -14,6 +14,38 @@ interface GalleryImage {
   model: string;
   imageUrl: string;
   createdAt: string;
+  aspectRatio?: string;
+}
+
+// Supported aspect ratios and their decimal values
+const ASPECT_RATIOS: { ratio: AspectRatio; value: number }[] = [
+  { ratio: '1:1', value: 1 },
+  { ratio: '16:9', value: 16/9 },
+  { ratio: '9:16', value: 9/16 },
+  { ratio: '4:3', value: 4/3 },
+  { ratio: '3:4', value: 3/4 },
+  { ratio: '3:2', value: 3/2 },
+  { ratio: '2:3', value: 2/3 },
+  { ratio: '21:9', value: 21/9 },
+  { ratio: '4:5', value: 4/5 },
+  { ratio: '5:4', value: 5/4 },
+];
+
+// Find the closest matching aspect ratio
+function detectAspectRatio(width: number, height: number): AspectRatio {
+  const imageRatio = width / height;
+  let closest = ASPECT_RATIOS[0];
+  let smallestDiff = Math.abs(imageRatio - closest.value);
+
+  for (const ar of ASPECT_RATIOS) {
+    const diff = Math.abs(imageRatio - ar.value);
+    if (diff < smallestDiff) {
+      smallestDiff = diff;
+      closest = ar;
+    }
+  }
+
+  return closest.ratio;
 }
 
 export default function EditPage() {
@@ -95,7 +127,17 @@ export default function EditPage() {
     setUploadedFile(file);
     const reader = new FileReader();
     reader.onload = (e) => {
-      setUploadPreview(e.target?.result as string);
+      const dataUrl = e.target?.result as string;
+      setUploadPreview(dataUrl);
+
+      // Detect aspect ratio from the uploaded image
+      const img = new Image();
+      img.onload = () => {
+        const detected = detectAspectRatio(img.naturalWidth, img.naturalHeight);
+        setAspectRatio(detected);
+        console.log(`Detected aspect ratio: ${detected} (${img.naturalWidth}x${img.naturalHeight})`);
+      };
+      img.src = dataUrl;
     };
     reader.readAsDataURL(file);
     setSelectedGalleryImage(null);
@@ -351,6 +393,18 @@ export default function EditPage() {
                           setSelectedGalleryImage(img);
                           setUploadedFile(null);
                           setUploadPreview('');
+                          // Use stored aspect ratio if available, otherwise detect it
+                          if (img.aspectRatio) {
+                            setAspectRatio(img.aspectRatio as AspectRatio);
+                          } else {
+                            // Detect from image
+                            const detectImg = new Image();
+                            detectImg.onload = () => {
+                              const detected = detectAspectRatio(detectImg.naturalWidth, detectImg.naturalHeight);
+                              setAspectRatio(detected);
+                            };
+                            detectImg.src = img.imageUrl;
+                          }
                         }}
                         className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
                           selectedGalleryImage?.id === img.id
@@ -413,6 +467,15 @@ export default function EditPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-2">
+                  Aspect Ratio
+                </label>
+                <p className="text-sm text-stone-600 bg-stone-50 rounded-lg px-3 py-2">
+                  {aspectRatio} <span className="text-stone-400">(auto-detected from source image)</span>
+                </p>
               </div>
 
               <div>
