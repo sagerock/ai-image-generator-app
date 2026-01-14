@@ -1,6 +1,13 @@
 import OpenAI, { toFile } from 'openai';
+import { File as NodeFile } from 'node:buffer';
 import { ImageProvider, GenerationRequest, GenerationResult, EditRequest } from './types';
 import { getGptImageSize } from '../models/dimensions';
+
+// Polyfill File for Node.js < 20
+if (typeof globalThis.File === 'undefined') {
+  // @ts-expect-error - Node.js File polyfill
+  globalThis.File = NodeFile;
+}
 
 type ImageQuality = 'auto' | 'high' | 'low' | 'medium';
 type GptImageSize = '1024x1024' | '1536x1024' | '1024x1536' | 'auto';
