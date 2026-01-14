@@ -125,6 +125,7 @@ export async function POST(request: NextRequest) {
       fileName: fileName,
       createdAt: FieldValue.serverTimestamp(),
       aspectRatio: aspectRatio,
+      tags: [],
     };
 
     const docRef = await adminFirestore.collection('generated-images').add(imageDoc);

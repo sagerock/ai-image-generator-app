@@ -47,7 +47,8 @@ export async function GET(request: NextRequest) {
         imageUrl: data.imageUrl,
         createdAt,
         size: data.size,
-        quality: data.quality
+        quality: data.quality,
+        tags: data.tags || [],
       };
     });
 
@@ -145,6 +146,79 @@ export async function DELETE(request: NextRequest) {
     console.error('❌ Error deleting image:', error);
     return NextResponse.json(
       { error: 'Failed to delete image. Please try again.' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    // Get the authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+
+    // Verify the user's authentication
+    let decodedToken;
+    try {
+      decodedToken = await adminAuth.verifyIdToken(idToken);
+    } catch (error) {
+      console.error('Error verifying token:', error);
+      return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 });
+    }
+
+    const userId = decodedToken.uid;
+
+    // Get the image ID and tags from the request body
+    const body = await request.json();
+    const { imageId, tags } = body;
+
+    if (!imageId) {
+      return NextResponse.json({ error: 'Image ID is required' }, { status: 400 });
+    }
+
+    if (!Array.isArray(tags)) {
+      return NextResponse.json({ error: 'Tags must be an array' }, { status: 400 });
+    }
+
+    // Validate and clean tags
+    const cleanedTags = tags
+      .map(tag => String(tag).trim().toLowerCase())
+      .filter(tag => tag.length > 0 && tag.length <= 50)
+      .slice(0, 20); // Limit to 20 tags max
+
+    // Get the image document
+    const imageRef = adminFirestore.collection('generated-images').doc(imageId);
+    const imageDoc = await imageRef.get();
+
+    if (!imageDoc.exists) {
+      return NextResponse.json({ error: 'Image not found' }, { status: 404 });
+    }
+
+    const imageData = imageDoc.data();
+
+    // Verify ownership
+    if (imageData?.userId !== userId) {
+      return NextResponse.json({ error: 'Not authorized to update this image' }, { status: 403 });
+    }
+
+    // Update the tags
+    await imageRef.update({ tags: cleanedTags });
+    console.log(`🏷️ Updated tags for image ${imageId}:`, cleanedTags);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Tags updated successfully',
+      tags: cleanedTags
+    });
+
+  } catch (error) {
+    console.error('❌ Error updating tags:', error);
+    return NextResponse.json(
+      { error: 'Failed to update tags. Please try again.' },
       { status: 500 }
     );
   }

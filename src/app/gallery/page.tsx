@@ -14,6 +14,7 @@ interface GeneratedImage {
   size: string;
   quality: string;
   dimensions?: { width: number; height: number };
+  tags?: string[];
 }
 
 export default function Gallery() {
@@ -25,6 +26,11 @@ export default function Gallery() {
   const [imageDimensions, setImageDimensions] = useState<Record<string, { width: number; height: number }>>({});
   const [deletingImages, setDeletingImages] = useState<Set<string>>(new Set());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [selectedFilterTags, setSelectedFilterTags] = useState<Set<string>>(new Set());
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const [editingTagsFor, setEditingTagsFor] = useState<string | null>(null);
+  const [tagInput, setTagInput] = useState('');
+  const [savingTags, setSavingTags] = useState(false);
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -49,7 +55,15 @@ export default function Gallery() {
         }
 
         const data = await response.json();
-        setImages(data.images || []);
+        const fetchedImages = data.images || [];
+        setImages(fetchedImages);
+
+        // Extract unique tags from all images
+        const tags = new Set<string>();
+        fetchedImages.forEach((img: GeneratedImage) => {
+          img.tags?.forEach(tag => tags.add(tag));
+        });
+        setAllTags(Array.from(tags).sort());
       } catch (error) {
         console.error('Error fetching images:', error);
         setError('Failed to load your images. Please try again.');
@@ -175,6 +189,78 @@ export default function Gallery() {
     }
   };
 
+  const saveTags = async (imageId: string) => {
+    if (!user) return;
+
+    setSavingTags(true);
+
+    try {
+      const idToken = await user.getIdToken();
+      const tags = tagInput
+        .split(',')
+        .map(tag => tag.trim().toLowerCase())
+        .filter(tag => tag.length > 0);
+
+      const response = await fetch('/api/gallery', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${idToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageId, tags }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save tags');
+      }
+
+      const data = await response.json();
+
+      // Update local state with new tags
+      setImages(prev => prev.map(img =>
+        img.id === imageId ? { ...img, tags: data.tags } : img
+      ));
+
+      // Update allTags with any new tags
+      setAllTags(prev => {
+        const newTags = new Set(prev);
+        data.tags.forEach((tag: string) => newTags.add(tag));
+        return Array.from(newTags).sort();
+      });
+
+      // Close the modal
+      setEditingTagsFor(null);
+      setTagInput('');
+    } catch (error) {
+      console.error('Error saving tags:', error);
+      setError('Failed to save tags. Please try again.');
+    } finally {
+      setSavingTags(false);
+    }
+  };
+
+  const openTagEditor = (image: GeneratedImage) => {
+    setEditingTagsFor(image.id);
+    setTagInput(image.tags?.join(', ') || '');
+  };
+
+  const toggleFilterTag = (tag: string) => {
+    setSelectedFilterTags(prev => {
+      const next = new Set(prev);
+      if (next.has(tag)) {
+        next.delete(tag);
+      } else {
+        next.add(tag);
+      }
+      return next;
+    });
+  };
+
+  const filteredImages = images.filter(img => {
+    if (selectedFilterTags.size === 0) return true;
+    return img.tags?.some(tag => selectedFilterTags.has(tag)) ?? false;
+  });
+
   return (
     <main className="min-h-screen bg-stone-50">
       <Header />
@@ -184,10 +270,42 @@ export default function Gallery() {
           <p className="text-stone-600">
             {imagesLoading
               ? 'Loading your images...'
-              : `${images.length} image${images.length !== 1 ? 's' : ''}`
+              : selectedFilterTags.size > 0
+                ? `${filteredImages.length} of ${images.length} image${images.length !== 1 ? 's' : ''}`
+                : `${images.length} image${images.length !== 1 ? 's' : ''}`
             }
           </p>
         </div>
+
+        {/* Tag Filter Bar */}
+        {allTags.length > 0 && !imagesLoading && (
+          <div className="mb-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm text-stone-500 mr-2">Filter by tag:</span>
+              {allTags.map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => toggleFilterTag(tag)}
+                  className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                    selectedFilterTags.has(tag)
+                      ? 'bg-sage-500 text-white'
+                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+              {selectedFilterTags.size > 0 && (
+                <button
+                  onClick={() => setSelectedFilterTags(new Set())}
+                  className="px-3 py-1 text-sm text-stone-500 hover:text-stone-700 transition-colors"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {imagesLoading ? (
           <div className="text-center py-16">
@@ -218,9 +336,22 @@ export default function Gallery() {
               Create Your First Image
             </Link>
           </div>
+        ) : filteredImages.length === 0 && selectedFilterTags.size > 0 ? (
+          <div className="text-center py-16">
+            <h2 className="text-xl font-semibold text-stone-900 mb-2">No matching images</h2>
+            <p className="text-stone-600 mb-6 max-w-md mx-auto">
+              No images found with the selected tags.
+            </p>
+            <button
+              onClick={() => setSelectedFilterTags(new Set())}
+              className="px-6 py-3 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-lg transition-colors"
+            >
+              Clear Filters
+            </button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {images.map((image) => {
+            {filteredImages.map((image) => {
               const dimensions = imageDimensions[image.id];
 
               return (
@@ -242,9 +373,26 @@ export default function Gallery() {
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                   </div>
                   <div className="p-4">
-                    <p className="text-stone-700 text-sm line-clamp-2 mb-3">
+                    <p className="text-stone-700 text-sm line-clamp-2 mb-2">
                       {image.prompt}
                     </p>
+                    {image.tags && image.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {image.tags.slice(0, 3).map(tag => (
+                          <span
+                            key={tag}
+                            className="px-2 py-0.5 bg-sage-100 text-sage-700 text-xs rounded-full"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                        {image.tags.length > 3 && (
+                          <span className="px-2 py-0.5 text-stone-400 text-xs">
+                            +{image.tags.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <div className="flex items-center justify-between text-xs text-stone-500">
                       <span className="px-2 py-1 bg-stone-100 text-stone-600 rounded font-medium">
                         {image.model}
@@ -256,6 +404,15 @@ export default function Gallery() {
                         {dimensions ? `${dimensions.width}×${dimensions.height}` : '...'}
                       </span>
                       <div className="flex items-center gap-3">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openTagEditor(image);
+                          }}
+                          className="text-xs text-stone-500 hover:text-stone-700 font-medium transition-colors"
+                        >
+                          Tags
+                        </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -284,6 +441,59 @@ export default function Gallery() {
           </div>
         )}
       </div>
+
+      {/* Tag Editing Modal */}
+      {editingTagsFor && (
+        <div
+          className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4"
+          onClick={() => {
+            setEditingTagsFor(null);
+            setTagInput('');
+          }}
+        >
+          <div
+            className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-stone-900 mb-2">Edit Tags</h3>
+            <p className="text-stone-600 text-sm mb-4">
+              Add tags separated by commas (e.g., landscape, portrait, dark)
+            </p>
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              placeholder="landscape, portrait, abstract..."
+              className="w-full p-3 border border-stone-300 rounded-lg text-stone-900 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-sage-500 transition-colors mb-4"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !savingTags) {
+                  saveTags(editingTagsFor);
+                }
+              }}
+            />
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setEditingTagsFor(null);
+                  setTagInput('');
+                }}
+                disabled={savingTags}
+                className="px-4 py-2 text-stone-600 hover:text-stone-800 font-medium transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => saveTags(editingTagsFor)}
+                disabled={savingTags}
+                className="px-4 py-2 bg-sage-500 hover:bg-sage-600 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+              >
+                {savingTags ? 'Saving...' : 'Save Tags'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Dialog */}
       {showDeleteConfirm && (
@@ -358,6 +568,19 @@ export default function Gallery() {
               </svg>
             </button>
 
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                openTagEditor(selectedImage);
+              }}
+              className="absolute top-4 right-[8.5rem] z-10 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-colors"
+              title="Edit Tags"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+            </button>
+
             <div className="relative max-w-full max-h-full" onClick={(e) => e.stopPropagation()}>
               <img
                 src={selectedImage.imageUrl}
@@ -367,6 +590,18 @@ export default function Gallery() {
 
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-4 rounded-b-lg">
                 <p className="text-sm font-medium mb-2">{selectedImage.prompt}</p>
+                {selectedImage.tags && selectedImage.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {selectedImage.tags.map(tag => (
+                      <span
+                        key={tag}
+                        className="px-2 py-0.5 bg-sage-500/40 text-white text-xs rounded-full"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="flex items-center justify-between text-xs opacity-80">
                   <div className="flex items-center gap-3">
                     <span className="px-2 py-1 bg-white/20 rounded">
