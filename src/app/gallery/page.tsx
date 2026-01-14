@@ -23,6 +23,8 @@ export default function Gallery() {
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
   const [imageDimensions, setImageDimensions] = useState<Record<string, { width: number; height: number }>>({});
+  const [deletingImages, setDeletingImages] = useState<Set<string>>(new Set());
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -133,6 +135,46 @@ export default function Gallery() {
     setSelectedImage(null);
   };
 
+  const deleteImage = async (imageId: string) => {
+    if (!user) return;
+
+    setDeletingImages(prev => new Set(prev).add(imageId));
+    setShowDeleteConfirm(null);
+
+    try {
+      const idToken = await user.getIdToken();
+      const response = await fetch('/api/gallery', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${idToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete image');
+      }
+
+      // Remove from local state
+      setImages(prev => prev.filter(img => img.id !== imageId));
+
+      // Close modal if the deleted image was selected
+      if (selectedImage?.id === imageId) {
+        setSelectedImage(null);
+      }
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      setError('Failed to delete image. Please try again.');
+    } finally {
+      setDeletingImages(prev => {
+        const next = new Set(prev);
+        next.delete(imageId);
+        return next;
+      });
+    }
+  };
+
   return (
     <main className="min-h-screen bg-stone-50">
       <Header />
@@ -213,15 +255,27 @@ export default function Gallery() {
                       <span className="text-xs text-stone-400">
                         {dimensions ? `${dimensions.width}×${dimensions.height}` : '...'}
                       </span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          downloadImage(image.imageUrl, image.prompt, image.model);
-                        }}
-                        className="text-xs text-sage-500 hover:text-sage-600 font-medium transition-colors"
-                      >
-                        Download
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downloadImage(image.imageUrl, image.prompt, image.model);
+                          }}
+                          className="text-xs text-sage-500 hover:text-sage-600 font-medium transition-colors"
+                        >
+                          Download
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowDeleteConfirm(image.id);
+                          }}
+                          disabled={deletingImages.has(image.id)}
+                          className="text-xs text-red-500 hover:text-red-600 font-medium transition-colors disabled:opacity-50"
+                        >
+                          {deletingImages.has(image.id) ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -230,6 +284,38 @@ export default function Gallery() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4"
+          onClick={() => setShowDeleteConfirm(null)}
+        >
+          <div
+            className="bg-white rounded-xl p-6 max-w-sm w-full shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-stone-900 mb-2">Delete Image?</h3>
+            <p className="text-stone-600 text-sm mb-6">
+              This action cannot be undone. The image will be permanently deleted.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="px-4 py-2 text-stone-600 hover:text-stone-800 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteImage(showDeleteConfirm)}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal */}
       {selectedImage && (
@@ -256,6 +342,19 @@ export default function Gallery() {
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDeleteConfirm(selectedImage.id);
+              }}
+              disabled={deletingImages.has(selectedImage.id)}
+              className="absolute top-4 right-24 z-10 bg-red-500/80 hover:bg-red-600 text-white rounded-full p-2 transition-colors disabled:opacity-50"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
             </button>
 
