@@ -1,33 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminFirestore, adminStorage, getAllUsers, getUserStats, updateUserCredits } from '@/lib/firebase-admin';
-
-// Detect image format from magic bytes
-function detectFormatFromBytes(buffer: Buffer): { mimeType: string; extension: string } | null {
-  if (buffer.length < 12) return null;
-
-  // PNG: 89 50 4E 47 0D 0A 1A 0A
-  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
-    return { mimeType: 'image/png', extension: 'png' };
-  }
-
-  // JPEG: FF D8 FF
-  if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
-    return { mimeType: 'image/jpeg', extension: 'jpg' };
-  }
-
-  // WebP: RIFF....WEBP
-  if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 &&
-      buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50) {
-    return { mimeType: 'image/webp', extension: 'webp' };
-  }
-
-  // GIF: GIF87a or GIF89a
-  if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46) {
-    return { mimeType: 'image/gif', extension: 'gif' };
-  }
-
-  return null;
-}
+import { adminAuth, getAllUsers, getUserStats, updateUserCredits } from '@/lib/firebase-admin';
 
 // Simple admin check - you can make this more sophisticated
 const ADMIN_EMAILS = [
@@ -132,7 +104,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { action, userId, credits, dryRun } = body;
+    const { action, userId, credits } = body;
 
     if (action === 'update-credits') {
       if (!userId || typeof credits !== 'number') {
@@ -150,112 +122,6 @@ export async function POST(request: NextRequest) {
       } else {
         return NextResponse.json({ error: 'Failed to update credits' }, { status: 500 });
       }
-    }
-
-    if (action === 'migrate-images') {
-      const isDryRun = dryRun !== false; // Default to dry run unless explicitly set to false
-      console.log(`🔧 Admin ${admin.email} started image migration (dryRun: ${isDryRun})`);
-
-      const bucket = adminStorage.bucket();
-      const imagesSnapshot = await adminFirestore.collection('generated-images').get();
-
-      let fixed = 0;
-      let skipped = 0;
-      let errors = 0;
-      let alreadyCorrect = 0;
-      const details: string[] = [];
-
-      for (const doc of imagesSnapshot.docs) {
-        const data = doc.data();
-        const imageUrl = data.imageUrl as string;
-        const fileName = data.fileName as string;
-
-        if (!imageUrl || !fileName) {
-          skipped++;
-          continue;
-        }
-
-        // Extract path from URL
-        const urlMatch = imageUrl.match(/storage\.googleapis\.com\/[^/]+\/(.+)$/);
-        if (!urlMatch) {
-          skipped++;
-          continue;
-        }
-
-        const filePath = urlMatch[1];
-        const currentExt = fileName.split('.').pop()?.toLowerCase() || '';
-
-        try {
-          const file = bucket.file(filePath);
-          const [exists] = await file.exists();
-
-          if (!exists) {
-            skipped++;
-            continue;
-          }
-
-          const [buffer] = await file.download();
-          const detected = detectFormatFromBytes(buffer);
-
-          if (!detected) {
-            skipped++;
-            continue;
-          }
-
-          if (currentExt === detected.extension) {
-            alreadyCorrect++;
-            continue;
-          }
-
-          details.push(`${fileName} -> .${detected.extension}`);
-
-          if (isDryRun) {
-            fixed++;
-            continue;
-          }
-
-          // Create new filename with correct extension
-          const newFileName = fileName.replace(/\.[^.]+$/, '.' + detected.extension);
-          const newFilePath = filePath.replace(fileName, newFileName);
-
-          // Upload with correct format
-          const newFile = bucket.file(newFilePath);
-          await newFile.save(buffer, {
-            metadata: { contentType: detected.mimeType },
-          });
-          await newFile.makePublic();
-
-          // Get new public URL
-          const newUrl = `https://storage.googleapis.com/${bucket.name}/${newFilePath}`;
-
-          // Update Firestore document
-          await adminFirestore.collection('generated-images').doc(doc.id).update({
-            imageUrl: newUrl,
-            fileName: newFileName,
-          });
-
-          // Delete old file
-          await file.delete();
-
-          fixed++;
-        } catch (error) {
-          console.error(`Error processing ${doc.id}:`, error);
-          errors++;
-        }
-      }
-
-      return NextResponse.json({
-        success: true,
-        dryRun: isDryRun,
-        summary: {
-          fixed,
-          alreadyCorrect,
-          skipped,
-          errors,
-          total: imagesSnapshot.size,
-        },
-        details: details.slice(0, 50), // Limit details to first 50
-      });
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });

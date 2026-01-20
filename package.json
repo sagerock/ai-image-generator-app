@@ -6,9 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "migrate:images": "tsx scripts/migrate-image-formats.ts",
-    "migrate:images:dry": "tsx scripts/migrate-image-formats.ts --dry-run"
+    "lint": "next lint"
   },
   "dependencies": {
     "firebase": "^11.10.0",
@@ -26,11 +24,9 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "dotenv": "^16.4.5",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
     "tailwindcss": "^4",
-    "tsx": "^4.19.0",
     "typescript": "5.9.3"
   }
 }
