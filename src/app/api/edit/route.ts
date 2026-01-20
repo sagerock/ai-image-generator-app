@@ -3,6 +3,7 @@ import { adminAuth, adminFirestore, adminStorage, createUserProfile, FieldValue 
 import { getModel } from '@/lib/models';
 import { getProvider } from '@/lib/providers';
 import { AspectRatio } from '@/lib/models/types';
+import { processBase64Image, downloadImage } from '@/lib/image-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -84,34 +85,39 @@ export async function POST(request: NextRequest) {
 
     const editedImageUrl = result.imageUrl;
     let imageBuffer: Buffer;
+    let mimeType: string;
+    let extension: string;
 
     // Handle base64 data URLs
     if (editedImageUrl.startsWith('data:')) {
       console.log('📥 Processing base64 image data...');
-      const base64Data = editedImageUrl.split(',')[1];
-      imageBuffer = Buffer.from(base64Data, 'base64');
+      const imageInfo = processBase64Image(editedImageUrl);
+      imageBuffer = imageInfo.buffer;
+      mimeType = imageInfo.mimeType;
+      extension = imageInfo.extension;
+      console.log(`📋 Detected format: ${mimeType} (.${extension})`);
     } else {
       // Download the image from the URL
       console.log('📥 Downloading edited image from URL...');
       try {
-        const response = await fetch(editedImageUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to download image: ${response.statusText}`);
-        }
-        imageBuffer = Buffer.from(await response.arrayBuffer());
+        const imageInfo = await downloadImage(editedImageUrl);
+        imageBuffer = imageInfo.buffer;
+        mimeType = imageInfo.mimeType;
+        extension = imageInfo.extension;
+        console.log(`📋 Detected format: ${mimeType} (.${extension})`);
       } catch (e) {
         console.error("Error downloading image:", e);
         throw new Error("Failed to download edited image from provider.");
       }
     }
 
-    // Upload to Firebase Storage
+    // Upload to Firebase Storage with correct format
     console.log('☁️ Uploading to Firebase Storage...');
-    const fileName = `edit_${Date.now()}.webp`;
+    const fileName = `edit_${Date.now()}.${extension}`;
     const file = adminStorage.bucket().file(`images/${userId}/${fileName}`);
 
     await file.save(imageBuffer, {
-      metadata: { contentType: 'image/webp' },
+      metadata: { contentType: mimeType },
     });
 
     // Make the file publicly accessible

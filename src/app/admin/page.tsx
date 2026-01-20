@@ -25,6 +25,19 @@ interface AdminData {
   totalCreditsUsed: number;
 }
 
+interface MigrationResult {
+  success: boolean;
+  dryRun: boolean;
+  summary: {
+    fixed: number;
+    alreadyCorrect: number;
+    skipped: number;
+    errors: number;
+    total: number;
+  };
+  details: string[];
+}
+
 const AdminDashboard = () => {
   const [user, loading] = useAuthState(auth);
   const [adminData, setAdminData] = useState<AdminData | null>(null);
@@ -32,6 +45,8 @@ const AdminDashboard = () => {
   const [error, setError] = useState<string | null>(null);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [newCredits, setNewCredits] = useState<number>(0);
+  const [migrationResult, setMigrationResult] = useState<MigrationResult | null>(null);
+  const [isMigrating, setIsMigrating] = useState(false);
 
   const fetchAdminData = async () => {
     if (!user) return;
@@ -90,6 +105,40 @@ const AdminDashboard = () => {
       setNewCredits(0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update credits');
+    }
+  };
+
+  const runMigration = async (dryRun: boolean) => {
+    if (!user) return;
+
+    setIsMigrating(true);
+    setMigrationResult(null);
+    setError(null);
+
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch('/api/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'migrate-images',
+          dryRun
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to run migration');
+      }
+
+      const result = await response.json();
+      setMigrationResult(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to run migration');
+    } finally {
+      setIsMigrating(false);
     }
   };
 
@@ -180,6 +229,71 @@ const AdminDashboard = () => {
           >
             {isLoading ? 'Loading...' : 'Refresh Data'}
           </button>
+        </div>
+
+        {/* Image Migration Tool */}
+        <div className="bg-white rounded-xl border border-stone-200 p-5 mb-6">
+          <h2 className="text-lg font-semibold text-stone-900 mb-2">Image Format Migration</h2>
+          <p className="text-sm text-stone-600 mb-4">
+            Fix images that were saved with incorrect file extensions. This detects the actual format and renames files accordingly.
+          </p>
+
+          <div className="flex flex-wrap gap-2 mb-4">
+            <button
+              onClick={() => runMigration(true)}
+              disabled={isMigrating}
+              className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {isMigrating ? 'Running...' : 'Preview (Dry Run)'}
+            </button>
+            <button
+              onClick={() => runMigration(false)}
+              disabled={isMigrating}
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {isMigrating ? 'Running...' : 'Run Migration'}
+            </button>
+          </div>
+
+          {migrationResult && (
+            <div className={`p-4 rounded-lg ${migrationResult.dryRun ? 'bg-blue-50 border border-blue-200' : 'bg-green-50 border border-green-200'}`}>
+              <div className="font-medium mb-2">
+                {migrationResult.dryRun ? 'Dry Run Results (no changes made)' : 'Migration Complete'}
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm mb-3">
+                <div>
+                  <span className="text-stone-500">Total:</span>{' '}
+                  <span className="font-medium">{migrationResult.summary.total}</span>
+                </div>
+                <div>
+                  <span className="text-stone-500">To Fix:</span>{' '}
+                  <span className="font-medium text-amber-600">{migrationResult.summary.fixed}</span>
+                </div>
+                <div>
+                  <span className="text-stone-500">Already OK:</span>{' '}
+                  <span className="font-medium text-green-600">{migrationResult.summary.alreadyCorrect}</span>
+                </div>
+                <div>
+                  <span className="text-stone-500">Skipped:</span>{' '}
+                  <span className="font-medium">{migrationResult.summary.skipped}</span>
+                </div>
+                <div>
+                  <span className="text-stone-500">Errors:</span>{' '}
+                  <span className="font-medium text-red-600">{migrationResult.summary.errors}</span>
+                </div>
+              </div>
+              {migrationResult.details.length > 0 && (
+                <div>
+                  <div className="text-sm text-stone-500 mb-1">Changes:</div>
+                  <div className="max-h-40 overflow-y-auto text-xs font-mono bg-white/50 rounded p-2">
+                    {migrationResult.details.map((detail, i) => (
+                      <div key={i}>{detail}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Users Table */}
