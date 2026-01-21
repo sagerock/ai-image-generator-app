@@ -12,6 +12,21 @@ if (typeof globalThis.File === 'undefined') {
 type ImageQuality = 'auto' | 'high' | 'low' | 'medium';
 type GptImageSize = '1024x1024' | '1536x1024' | '1024x1536' | 'auto';
 
+// Map GPT Image model IDs to language models for the Responses API
+// The Responses API uses a language model + image_generation tool, not gpt-image-* directly
+function getResponsesApiModel(gptImageModelId: string): string {
+  switch (gptImageModelId) {
+    case 'gpt-image-1-mini':
+      return 'gpt-4.1-mini';
+    case 'gpt-image-1':
+      return 'gpt-4.1';
+    case 'gpt-image-1.5':
+      return 'gpt-4.1'; // Use gpt-4.1 with high quality setting
+    default:
+      return 'gpt-4.1-mini';
+  }
+}
+
 export class OpenAIProvider implements ImageProvider {
   name = 'openai';
   private client: OpenAI;
@@ -72,12 +87,14 @@ export class OpenAIProvider implements ImageProvider {
     size: GptImageSize,
     quality: ImageQuality
   ): Promise<GenerationResult> {
-    console.log(`🎨 Using Responses API for ${model.name}`);
+    // Map gpt-image-* to language model for Responses API
+    const responsesModel = getResponsesApiModel(model.providerModelId);
+    console.log(`🎨 Using Responses API for ${model.name} (${responsesModel} + image_generation tool)`);
 
     // Use the Responses API with image_generation tool
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await (this.client as any).responses.create({
-      model: model.providerModelId,
+      model: responsesModel,
       input: prompt,
       tools: [{
         type: 'image_generation',
@@ -167,12 +184,14 @@ export class OpenAIProvider implements ImageProvider {
     size: GptImageSize,
     quality: ImageQuality
   ): Promise<GenerationResult> {
-    console.log(`🎨 Using Responses API for editing with ${model.name}`);
+    // Map gpt-image-* to language model for Responses API
+    const responsesModel = getResponsesApiModel(model.providerModelId);
+    console.log(`🎨 Using Responses API for editing with ${model.name} (${responsesModel} + image_generation tool)`);
 
     // Use the Responses API with image input and image_generation tool
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await (this.client as any).responses.create({
-      model: model.providerModelId,
+      model: responsesModel,
       input: [
         {
           role: 'user',
