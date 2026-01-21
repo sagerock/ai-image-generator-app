@@ -30,7 +30,12 @@ export class OpenAIProvider implements ImageProvider {
 
     console.log(`🎨 Generating with ${model.name} (${modelId}), size: ${size}, quality: ${quality}`);
 
-    // Use the Image API for GPT Image models
+    // Use the Responses API for GPT Image models (gpt-image-1, gpt-image-1.5, gpt-image-1-mini)
+    if (modelId.startsWith('gpt-image')) {
+      return this.generateWithResponsesApi(prompt, model, size, quality);
+    }
+
+    // Fall back to Images API for DALL-E models
     const response = await this.client.images.generate({
       model: modelId,
       prompt: prompt,
@@ -39,7 +44,7 @@ export class OpenAIProvider implements ImageProvider {
       quality: quality,
     });
 
-    // GPT Image models return base64 data in b64_json field
+    // DALL-E models return base64 data in b64_json field
     const imageData = response.data?.[0];
 
     if (!imageData) {
@@ -61,6 +66,42 @@ export class OpenAIProvider implements ImageProvider {
     return { imageUrl, rawOutput: response };
   }
 
+  private async generateWithResponsesApi(
+    prompt: string,
+    model: GenerationRequest['model'],
+    size: GptImageSize,
+    quality: ImageQuality
+  ): Promise<GenerationResult> {
+    console.log(`🎨 Using Responses API for ${model.name}`);
+
+    // Use the Responses API with image_generation tool
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await (this.client as any).responses.create({
+      model: model.providerModelId,
+      input: prompt,
+      tools: [{
+        type: 'image_generation',
+        size: size,
+        quality: quality,
+      }],
+    });
+
+    // Extract image from response output
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const imageOutput = response.output?.find((output: any) => output.type === 'image_generation_call');
+
+    if (!imageOutput?.result) {
+      console.error('❌ No image in Responses API response:', JSON.stringify(response, null, 2));
+      throw new Error('No image returned from OpenAI Responses API');
+    }
+
+    // The result is base64 image data
+    const imageUrl = `data:image/png;base64,${imageOutput.result}`;
+
+    console.log(`✅ ${model.name} generation complete via Responses API`);
+    return { imageUrl, rawOutput: response };
+  }
+
   async edit(request: EditRequest): Promise<GenerationResult> {
     const { prompt, model, aspectRatio, imageUrl } = request;
     const modelId = model.providerModelId;
@@ -79,7 +120,12 @@ export class OpenAIProvider implements ImageProvider {
       imageBase64 = Buffer.from(buffer).toString('base64');
     }
 
-    // GPT Image models support editing via the edit endpoint with image input
+    // Use the Responses API for GPT Image models
+    if (modelId.startsWith('gpt-image')) {
+      return this.editWithResponsesApi(prompt, model, imageBase64, size, quality);
+    }
+
+    // Fall back to Images API for DALL-E models
     const editPrompt = `Edit this image: ${prompt}`;
 
     // Convert base64 to a file-like object using OpenAI's toFile helper
@@ -111,6 +157,54 @@ export class OpenAIProvider implements ImageProvider {
     }
 
     console.log(`✅ ${model.name} edit complete`);
+    return { imageUrl: resultUrl, rawOutput: response };
+  }
+
+  private async editWithResponsesApi(
+    prompt: string,
+    model: EditRequest['model'],
+    imageBase64: string,
+    size: GptImageSize,
+    quality: ImageQuality
+  ): Promise<GenerationResult> {
+    console.log(`🎨 Using Responses API for editing with ${model.name}`);
+
+    // Use the Responses API with image input and image_generation tool
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await (this.client as any).responses.create({
+      model: model.providerModelId,
+      input: [
+        {
+          role: 'user',
+          content: [
+            { type: 'input_text', text: `Edit this image: ${prompt}` },
+            {
+              type: 'input_image',
+              image_url: `data:image/png;base64,${imageBase64}`,
+            },
+          ],
+        },
+      ],
+      tools: [{
+        type: 'image_generation',
+        size: size,
+        quality: quality,
+      }],
+    });
+
+    // Extract image from response output
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const imageOutput = response.output?.find((output: any) => output.type === 'image_generation_call');
+
+    if (!imageOutput?.result) {
+      console.error('❌ No image in Responses API edit response:', JSON.stringify(response, null, 2));
+      throw new Error('No image returned from OpenAI Responses API edit');
+    }
+
+    // The result is base64 image data
+    const resultUrl = `data:image/png;base64,${imageOutput.result}`;
+
+    console.log(`✅ ${model.name} edit complete via Responses API`);
     return { imageUrl: resultUrl, rawOutput: response };
   }
 }
